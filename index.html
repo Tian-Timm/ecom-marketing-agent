@@ -2135,10 +2135,18 @@
 
       const preview = document.createElement("div");
       preview.className = "preview";
+      let generatedImageUrl = "";
       if (record.status === "PASSED" && record.generated_image) {
         const image = document.createElement("img");
-        const suffix = cacheBust ? `?t=${Date.now()}` : "";
-        image.src = `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
+        const assetVersion = cacheBust
+          ? Date.now()
+          : state.report?.generated_at || state.rulesVersion;
+        const suffix = assetVersion
+          ? `?v=${encodeURIComponent(assetVersion)}`
+          : "";
+        generatedImageUrl =
+          `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
+        image.src = generatedImageUrl;
         image.alt = `${record.task_id} 通过规则审计后生成的营销图片`;
         image.addEventListener("error", () => {
           preview.replaceChildren();
@@ -2159,7 +2167,7 @@
       if (record.status === "PASSED" && record.generated_image) {
         const download = document.createElement("a");
         download.className = "download";
-        download.href = `generated_output/${encodeURIComponent(record.generated_image)}`;
+        download.href = generatedImageUrl;
         download.download = record.generated_image;
         download.textContent = "下载合规图片";
         resultContent.appendChild(download);

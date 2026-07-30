@@ -72,6 +72,11 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn("configureRuntimeUI(apiOnline)", self.html)
         self.assertNotIn("const forbiddenWords", self.html)
 
+    def test_generated_images_use_the_pipeline_version_to_avoid_stale_cache(self) -> None:
+        self.assertIn("state.report?.generated_at || state.rulesVersion", self.html)
+        self.assertIn("?v=${encodeURIComponent(assetVersion)}", self.html)
+        self.assertIn("download.href = generatedImageUrl", self.html)
+
     def test_required_demo_ids_are_unique(self) -> None:
         required = {
             "demo-heading",
