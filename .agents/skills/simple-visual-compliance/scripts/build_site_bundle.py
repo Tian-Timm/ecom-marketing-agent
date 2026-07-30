@@ -38,6 +38,12 @@ def build_worker() -> Path:
     if not image_paths:
         raise ValueError("部署前至少需要一张真实流水线图片产物")
 
+    report = json.loads(report_path.read_text(encoding="utf-8"))
+    demo_status = {
+        "online": False,
+        "mode": "demo",
+        "rules_version": str(report.get("rules_version", "unknown")),
+    }
     files: dict[str, dict[str, str]] = {
         "/generated_output/pipeline_result.json": {
             "contentType": "application/json; charset=utf-8",
@@ -59,8 +65,10 @@ def build_worker() -> Path:
 
     index_b64 = encode_file(index_path)
     files_json = json.dumps(files, ensure_ascii=False, separators=(",", ":"))
+    status_json = json.dumps(demo_status, ensure_ascii=False, separators=(",", ":"))
     worker_source = f"""const INDEX_HTML_B64 = {json.dumps(index_b64)};
 const FILES = {files_json};
+const DEMO_STATUS = {status_json};
 
 function decodeBase64(value) {{
   const binary = atob(value);
@@ -81,6 +89,18 @@ export default {{
   async fetch(request) {{
     const url = new URL(request.url);
     const path = url.pathname === "/" ? "/index.html" : url.pathname;
+    if (path === "/api/status") {{
+      return new Response(
+        request.method === "HEAD" ? null : JSON.stringify(DEMO_STATUS),
+        {{
+          status: 200,
+          headers: responseHeaders("application/json; charset=utf-8", "no-store")
+        }}
+      );
+    }}
+    if (path === "/favicon.ico") {{
+      return new Response(null, {{ status: 204 }});
+    }}
     if (path === "/index.html") {{
       const source = new TextDecoder().decode(decodeBase64(INDEX_HTML_B64));
       const socialMeta = [
