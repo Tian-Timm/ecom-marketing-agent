@@ -1,0 +1,2342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="CHA CUP 营销图片合规审计与确定性组装工作台">
+  <title>CHA CUP 营销图片合规工作台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #edf1ef;
+      --surface: #f8faf9;
+      --surface-strong: #ffffff;
+      --ink: #17211d;
+      --muted: #65716b;
+      --line: #d4ddd8;
+      --brand: #244638;
+      --brand-soft: #dfe9e4;
+      --danger: #a33d47;
+      --danger-soft: #f5e6e8;
+      --warning: #8a5b16;
+      --warning-soft: #f4ead8;
+      --radius: 14px;
+      --shadow: 0 18px 45px rgba(36, 70, 56, 0.08);
+      font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--page);
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100dvh;
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(36, 70, 56, 0.24);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      padding: 12px clamp(18px, 4vw, 56px);
+      border-bottom: 1px solid rgba(212, 221, 216, 0.9);
+      background: rgba(248, 250, 249, 0.94);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 2px solid var(--brand);
+      border-radius: 50%;
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    .brand-name {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .connection {
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-strong);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .connection.live {
+      border-color: #91aa9e;
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .shell {
+      width: min(1540px, 100%);
+      margin: 0 auto;
+      padding: 28px clamp(16px, 3vw, 42px) 44px;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(420px, 0.8fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .intro h1 {
+      max-width: 720px;
+      margin: 0;
+      color: var(--brand);
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1.08;
+      letter-spacing: -0.035em;
+    }
+
+    .intro p {
+      max-width: 620px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .flow-item {
+      min-height: 86px;
+      padding: 16px;
+      border-right: 1px solid var(--line);
+    }
+
+    .flow-item:last-child {
+      border-right: 0;
+    }
+
+    .flow-item strong,
+    .flow-item span {
+      display: block;
+    }
+
+    .flow-item strong {
+      color: var(--brand);
+      font-size: 14px;
+    }
+
+    .flow-item span {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      padding: 16px 20px;
+      border-right: 1px solid var(--line);
+    }
+
+    .metric:last-child {
+      border-right: 0;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-value {
+      margin-top: 5px;
+      color: var(--brand);
+      font-size: 24px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 280px minmax(420px, 1fr) minmax(380px, 0.9fr);
+      min-height: 650px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-strong);
+      box-shadow: var(--shadow);
+    }
+
+    .pane {
+      min-width: 0;
+      padding: 22px;
+      border-right: 1px solid var(--line);
+    }
+
+    .pane:last-child {
+      border-right: 0;
+    }
+
+    .pane-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .pane-heading h2 {
+      margin: 0;
+      font-size: 16px;
+      white-space: nowrap;
+    }
+
+    .pane-note {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .task-list {
+      display: grid;
+      gap: 8px;
+      max-height: 610px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .task-button {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      background: #f0f4f2;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .task-button:hover {
+      border-color: #b9c9c1;
+      background: #e8efeb;
+    }
+
+    .task-button:active {
+      transform: translateY(1px);
+    }
+
+    .task-button.active {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+    }
+
+    .task-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .task-id {
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .task-copy {
+      margin-top: 7px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.passed {
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+
+    .status.blocked {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: #3f4d46;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid #c8d3ce;
+      border-radius: 9px;
+      background: #ffffff;
+      color: var(--ink);
+    }
+
+    .field input,
+    .field select {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    .field textarea {
+      min-height: 80px;
+      resize: vertical;
+      padding: 11px 12px;
+      line-height: 1.6;
+    }
+
+    .field input:disabled,
+    .field select:disabled,
+    .field textarea:disabled {
+      background: #eef2f0;
+      color: #7a8680;
+      cursor: not-allowed;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .primary,
+    .secondary,
+    .download {
+      min-height: 42px;
+      border-radius: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 150ms ease, background 150ms ease;
+    }
+
+    .primary {
+      flex: 1;
+      border: 1px solid var(--brand);
+      background: var(--brand);
+      color: #ffffff;
+    }
+
+    .primary:hover {
+      background: #19382c;
+    }
+
+    .primary:active,
+    .secondary:active,
+    .download:active {
+      transform: translateY(1px);
+    }
+
+    .primary:disabled {
+      border-color: #9ca9a3;
+      background: #9ca9a3;
+      cursor: not-allowed;
+    }
+
+    .secondary {
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--brand);
+    }
+
+    .runtime-hint {
+      margin: 14px 0 0;
+      padding: 11px 13px;
+      border-radius: 9px;
+      background: var(--warning-soft);
+      color: var(--warning);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .result-pane {
+      background: #f5f8f6;
+    }
+
+    .result-summary {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #ffffff;
+    }
+
+    .result-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .result-title h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .rule-version {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .violations {
+      display: grid;
+      gap: 9px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .violation {
+      padding: 11px 12px;
+      border-left: 3px solid var(--danger);
+      border-radius: 7px;
+      background: var(--danger-soft);
+      color: #713039;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .clear-result {
+      margin: 14px 0 0;
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .preview {
+      display: grid;
+      place-items: center;
+      min-height: 330px;
+      margin-top: 16px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #e8eeeb;
+    }
+
+    .preview img {
+      display: block;
+      width: 100%;
+      max-height: 470px;
+      object-fit: contain;
+    }
+
+    .preview-empty {
+      max-width: 260px;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+      text-align: center;
+    }
+
+    .download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 12px;
+      border: 1px solid var(--brand);
+      background: #ffffff;
+      color: var(--brand);
+      text-decoration: none;
+    }
+
+    details {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    summary {
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    pre {
+      max-height: 240px;
+      overflow: auto;
+      margin: 10px 0 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: #e9efec;
+      color: #284136;
+      font: 11px/1.65 Consolas, "Microsoft YaHei", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty {
+      padding: 24px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 40;
+      max-width: min(420px, calc(100vw - 44px));
+      padding: 13px 16px;
+      border-radius: 10px;
+      background: #203d31;
+      color: #ffffff;
+      box-shadow: var(--shadow);
+      font-size: 13px;
+    }
+
+    .toast.error {
+      background: #7d313a;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1180px) {
+      .intro {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .workspace {
+        grid-template-columns: 260px minmax(0, 1fr);
+      }
+
+      .result-pane {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--line);
+      }
+
+      .pane:nth-child(2) {
+        border-right: 0;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .brand-subtitle {
+        display: none;
+      }
+
+      .connection {
+        max-width: 42vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .shell {
+        padding-top: 20px;
+      }
+
+      .intro h1 {
+        font-size: 32px;
+      }
+
+      .flow,
+      .metrics,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-item,
+      .metric,
+      .pane {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .flow-item:last-child,
+      .metric:last-child,
+      .pane:last-child {
+        border-bottom: 0;
+      }
+
+      .workspace {
+        overflow: visible;
+      }
+
+      .task-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-height: none;
+      }
+
+      .result-pane {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .topbar {
+        flex-wrap: wrap;
+        gap: 9px;
+      }
+
+      .connection {
+        width: 100%;
+        max-width: none;
+        text-align: center;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .form-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .form-actions .primary,
+      .form-actions .secondary {
+        width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    /* 2026-07-30 SaaS dashboard redesign
+       Dial lock: variance 3, motion 1, density 8. */
+    :root {
+      --page: #f4f4f5;
+      --surface: #fcfcfd;
+      --surface-subtle: #f8f8fa;
+      --surface-hover: #f1f1f3;
+      --ink: #18181b;
+      --ink-soft: #3f3f46;
+      --muted: #71717a;
+      --line: #d9d9de;
+      --line-strong: #c5c5cc;
+      --accent: #324f46;
+      --accent-hover: #283f38;
+      --accent-soft: #e9efed;
+      --positive: #2f6251;
+      --positive-soft: #e7f0ec;
+      --danger: #a13d36;
+      --danger-soft: #f8eae8;
+      --warning: #825b1f;
+      --radius-panel: 10px;
+      --radius-control: 6px;
+      --radius-badge: 4px;
+      --shadow-subtle: 0 1px 2px rgba(24, 24, 27, 0.04);
+      --font-sans: "Segoe UI Variable", "Microsoft YaHei UI", "PingFang SC", sans-serif;
+      --font-mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+    }
+
+    html {
+      min-width: 320px;
+      color-scheme: light;
+      background: var(--page);
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100dvh;
+      color: var(--ink);
+      background: var(--page);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      line-height: 1.5;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid rgba(50, 79, 70, 0.36);
+      outline-offset: 2px;
+    }
+
+    .topbar {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      display: flex;
+      min-height: 56px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px clamp(14px, 2vw, 28px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(252, 252, 253, 0.98);
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .brand {
+      gap: 10px;
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-control);
+      color: #ffffff;
+      background: var(--accent);
+      box-shadow: none;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .brand-name {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      margin-top: 1px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .connection {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      color: var(--muted);
+      background: var(--surface-subtle);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0;
+      box-shadow: none;
+    }
+
+    .connection.live {
+      border-color: #aac1b8;
+      color: var(--positive);
+      background: var(--positive-soft);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1920px;
+      margin: 0 auto;
+      padding: 12px clamp(12px, 1.5vw, 24px) 24px;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(520px, 0.72fr);
+      gap: 24px;
+      align-items: center;
+      margin: 0 0 10px;
+      padding: 2px 2px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .intro h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(20px, 2vw, 26px);
+      font-weight: 680;
+      line-height: 1.2;
+      letter-spacing: -0.025em;
+    }
+
+    .intro p {
+      max-width: 760px;
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      min-height: 48px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .flow-item {
+      min-width: 0;
+      min-height: 0;
+      padding: 8px 12px;
+      border-right: 1px solid var(--line);
+    }
+
+    .flow-item:last-child {
+      border-right: 0;
+    }
+
+    .flow-item strong,
+    .flow-item span {
+      display: block;
+    }
+
+    .flow-item strong {
+      margin-bottom: 1px;
+      color: var(--ink-soft);
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    .flow-item span {
+      overflow: hidden;
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 10px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .metric {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 50px;
+      padding: 8px 14px;
+      border-right: 1px solid var(--line);
+      background: transparent;
+    }
+
+    .metric:last-child {
+      border-right: 0;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .metric-value {
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 650;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .demo-bar {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.62fr) minmax(620px, 1.38fr);
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .demo-heading {
+      min-width: 0;
+    }
+
+    .demo-heading h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 680;
+    }
+
+    .demo-heading p {
+      margin: 2px 0 0;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .demo-case-list {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .demo-case {
+      display: grid;
+      min-width: 0;
+      min-height: 38px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+      align-items: center;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      color: var(--ink-soft);
+      background: var(--surface-subtle);
+      text-align: left;
+      transition: background-color 100ms ease, border-color 100ms ease;
+    }
+
+    .demo-case:hover {
+      border-color: var(--line-strong);
+      background: var(--surface-hover);
+    }
+
+    .demo-case.active {
+      border-color: #aebfb9;
+      background: var(--accent-soft);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    .demo-case-name {
+      overflow: hidden;
+      font-size: 10px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .demo-case-result {
+      padding: 2px 5px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-badge);
+      color: var(--muted);
+      background: #ffffff;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .demo-case-result.passed {
+      border-color: #b6c9c1;
+      color: var(--positive);
+      background: var(--positive-soft);
+    }
+
+    .demo-case-result.blocked {
+      border-color: #e0bcb8;
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.62fr) minmax(430px, 1.18fr) minmax(360px, 0.92fr);
+      min-height: calc(100dvh - 250px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .pane {
+      min-width: 0;
+      padding: 14px;
+      border-right: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .pane:last-child {
+      border-right: 0;
+    }
+
+    .pane-heading {
+      display: flex;
+      min-height: 30px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pane-heading h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 680;
+      letter-spacing: -0.01em;
+    }
+
+    .pane-note {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.4;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-list {
+      display: flex;
+      max-height: calc(100dvh - 250px);
+      flex-direction: column;
+      gap: 3px;
+      overflow-y: auto;
+      padding-right: 3px;
+      scrollbar-color: var(--line-strong) transparent;
+      scrollbar-width: thin;
+    }
+
+    .task-button {
+      width: 100%;
+      min-height: 54px;
+      padding: 8px 9px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-control);
+      color: var(--ink-soft);
+      background: transparent;
+      box-shadow: none;
+      text-align: left;
+      transition: background-color 100ms ease, border-color 100ms ease;
+    }
+
+    .task-button:hover {
+      border-color: var(--line);
+      background: var(--surface-hover);
+      transform: none;
+    }
+
+    .task-button:active {
+      transform: none;
+    }
+
+    .task-button.active {
+      border-color: #b8c7c2;
+      background: var(--accent-soft);
+      box-shadow: inset 2px 0 0 var(--accent);
+    }
+
+    .task-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .task-id {
+      overflow: hidden;
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .task-copy {
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status,
+    .rule-version {
+      display: inline-flex;
+      align-items: center;
+      min-height: 20px;
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-badge);
+      color: var(--muted);
+      background: var(--surface-subtle);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .status.passed {
+      border-color: #b6c9c1;
+      color: var(--positive);
+      background: var(--positive-soft);
+    }
+
+    .status.blocked {
+      border-color: #e0bcb8;
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 4px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    .field label {
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      color: var(--ink);
+      background: #ffffff;
+      box-shadow: inset 0 1px 1px rgba(24, 24, 27, 0.025);
+      transition: border-color 100ms ease, box-shadow 100ms ease;
+    }
+
+    .field input,
+    .field select {
+      height: 34px;
+      padding: 5px 9px;
+    }
+
+    .field textarea {
+      min-height: 62px;
+      max-height: 130px;
+      padding: 7px 9px;
+      resize: vertical;
+    }
+
+    .field input:hover,
+    .field select:hover,
+    .field textarea:hover {
+      border-color: #a7a7b0;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(50, 79, 70, 0.12);
+      outline: 0;
+    }
+
+    .field input:disabled,
+    .field select:disabled,
+    .field textarea:disabled {
+      color: var(--muted);
+      background: var(--surface-hover);
+      cursor: not-allowed;
+      opacity: 1;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .primary,
+    .secondary,
+    .download {
+      min-height: 32px;
+      padding: 5px 10px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-control);
+      font-size: 11px;
+      font-weight: 650;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      box-shadow: none;
+      transition: background-color 100ms ease, border-color 100ms ease;
+    }
+
+    .primary {
+      border-color: var(--accent);
+      color: #ffffff;
+      background: var(--accent);
+    }
+
+    .primary:hover {
+      border-color: var(--accent-hover);
+      background: var(--accent-hover);
+      transform: none;
+    }
+
+    .primary:active,
+    .secondary:active,
+    .download:active {
+      transform: none;
+    }
+
+    .primary:disabled {
+      border-color: #d0d0d5;
+      color: #909098;
+      background: #e4e4e7;
+      cursor: not-allowed;
+      opacity: 1;
+    }
+
+    .secondary {
+      border-color: var(--line-strong);
+      color: var(--ink-soft);
+      background: #ffffff;
+    }
+
+    .secondary:hover {
+      border-color: #a7a7b0;
+      background: var(--surface-hover);
+    }
+
+    .runtime-hint {
+      margin: 8px 0 0;
+      padding: 7px 8px;
+      border-left: 2px solid var(--line-strong);
+      border-radius: 0;
+      color: var(--muted);
+      background: var(--surface-subtle);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .result-pane {
+      background: var(--surface-subtle);
+    }
+
+    .result-summary {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 9px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .result-title h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 680;
+    }
+
+    .violations {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .violation {
+      padding: 8px 9px;
+      border: 1px solid #e2c8c5;
+      border-left: 2px solid var(--danger);
+      border-radius: var(--radius-control);
+      color: #74352f;
+      background: #fcf5f4;
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    .clear-result {
+      padding: 9px;
+      border: 1px solid #bdd0c8;
+      border-left: 2px solid var(--positive);
+      border-radius: var(--radius-control);
+      color: var(--positive);
+      background: var(--positive-soft);
+      font-size: 11px;
+    }
+
+    .preview {
+      display: grid;
+      min-height: 220px;
+      place-items: center;
+      padding: 10px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: #eeeeF0;
+    }
+
+    .preview img {
+      display: block;
+      max-width: 100%;
+      max-height: 410px;
+      border-radius: 3px;
+      box-shadow: 0 8px 24px rgba(24, 24, 27, 0.12);
+      object-fit: contain;
+    }
+
+    .preview-empty {
+      max-width: 280px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .download {
+      justify-self: start;
+      border-color: var(--accent);
+      color: var(--accent);
+      background: transparent;
+    }
+
+    .download:hover {
+      color: #ffffff;
+      background: var(--accent);
+    }
+
+    details {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: #ffffff;
+    }
+
+    summary {
+      padding: 8px 9px;
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 650;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    details[open] summary {
+      border-bottom: 1px solid var(--line);
+    }
+
+    pre {
+      max-height: 240px;
+      margin: 0;
+      padding: 10px;
+      overflow: auto;
+      color: #3f3f46;
+      background: #f6f6f7;
+      font: 10px/1.65 var(--font-mono);
+      tab-size: 2;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty {
+      display: grid;
+      min-height: 92px;
+      place-items: center;
+      padding: 14px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius-control);
+      color: var(--muted);
+      background: transparent;
+      font-size: 11px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 40;
+      right: 18px;
+      bottom: 18px;
+      max-width: min(380px, calc(100vw - 36px));
+      padding: 9px 11px;
+      border: 1px solid #aac1b8;
+      border-radius: var(--radius-control);
+      color: var(--positive);
+      background: #f4f8f6;
+      box-shadow: 0 8px 24px rgba(24, 24, 27, 0.1);
+      font-size: 11px;
+    }
+
+    .toast.error {
+      border-color: #e0bcb8;
+      color: var(--danger);
+      background: #fcf5f4;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1240px) {
+      .intro {
+        grid-template-columns: minmax(0, 1fr) minmax(450px, 0.82fr);
+      }
+
+      .demo-bar {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .workspace {
+        grid-template-columns: 230px minmax(420px, 1fr);
+      }
+
+      .result-pane {
+        grid-column: 1 / -1;
+        border-top: 1px solid var(--line);
+        background: var(--surface);
+      }
+
+      .pane:nth-child(2) {
+        border-right: 0;
+      }
+
+      .result-summary {
+        grid-template-columns: minmax(300px, 0.78fr) minmax(380px, 1.22fr);
+        align-items: start;
+      }
+
+      .result-summary .result-title,
+      .result-summary details {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 840px) {
+      .intro {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .flow {
+        min-height: 44px;
+      }
+
+      .workspace {
+        grid-template-columns: 210px minmax(0, 1fr);
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .result-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .result-summary .result-title,
+      .result-summary details {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        min-height: 52px;
+        flex-wrap: nowrap;
+        gap: 10px;
+        align-items: center;
+        padding: 7px 10px;
+      }
+
+      .brand-subtitle {
+        display: none;
+      }
+
+      .connection {
+        width: auto;
+        max-width: 132px;
+        flex-shrink: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .shell {
+        padding: 9px 9px 18px;
+      }
+
+      .intro {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+      }
+
+      .intro h1 {
+        font-size: 20px;
+      }
+
+      .intro p {
+        font-size: 11px;
+      }
+
+      .flow {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-item {
+        display: grid;
+        grid-template-columns: 88px minmax(0, 1fr);
+        gap: 8px;
+        padding: 6px 9px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .flow-item:last-child {
+        border-bottom: 0;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-bottom: 8px;
+      }
+
+      .demo-bar {
+        margin-bottom: 8px;
+        padding: 9px;
+      }
+
+      .demo-heading p {
+        white-space: normal;
+      }
+
+      .demo-case-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric {
+        min-height: 44px;
+        padding: 7px 9px;
+      }
+
+      .metric:nth-child(2) {
+        border-right: 0;
+      }
+
+      .metric:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .pane,
+      .pane:nth-child(2) {
+        padding: 12px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .pane:last-child {
+        border-bottom: 0;
+      }
+
+      .task-list {
+        display: grid;
+        max-height: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        overflow: visible;
+        padding-right: 0;
+      }
+
+      .task-button {
+        min-height: 52px;
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .field.full {
+        grid-column: 1 / -1;
+      }
+
+      .preview {
+        min-height: 190px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .brand-name {
+        font-size: 12px;
+      }
+
+      .connection {
+        max-width: 112px;
+        padding-inline: 7px;
+        font-size: 10px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.full {
+        grid-column: auto;
+      }
+
+      .form-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .primary,
+      .secondary,
+      .download {
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">C</div>
+      <div>
+        <p class="brand-name">CHA CUP 营销图片工作台</p>
+        <p class="brand-subtitle">业务规则审计与确定性图层组装</p>
+      </div>
+    </div>
+    <div class="connection" id="connection-status">正在检查执行服务</div>
+  </header>
+
+  <main class="shell">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">先审计，再出图</h1>
+        <p>规则技能负责判断任务能否进入生产，图层组装脚本只处理通过任务。前端不保存规则，也不模拟合规结果。</p>
+      </div>
+      <div class="flow" aria-label="处理流程">
+        <div class="flow-item">
+          <strong>提交任务</strong>
+          <span>价格、日期、比例与营销文案</span>
+        </div>
+        <div class="flow-item">
+          <strong>规则审计</strong>
+          <span>返回结构化状态和违规原因</span>
+        </div>
+        <div class="flow-item">
+          <strong>确定性组装</strong>
+          <span>仅通过任务生成图片文件</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="当前批次统计">
+      <div class="metric">
+        <div class="metric-label">任务总数</div>
+        <div class="metric-value" id="metric-total">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">校验通过</div>
+        <div class="metric-value" id="metric-passed">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">规则阻断</div>
+        <div class="metric-value" id="metric-blocked">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">生成图片</div>
+        <div class="metric-value" id="metric-images">0</div>
+      </div>
+    </section>
+
+    <section class="demo-bar" aria-labelledby="demo-heading">
+      <div class="demo-heading">
+        <h2 id="demo-heading">快速体验真实审查案例</h2>
+        <p id="demo-note">选择一个业务场景，输入、规则结论和图片产物会同步切换。</p>
+      </div>
+      <div class="demo-case-list" id="demo-case-list">
+        <button class="demo-case" type="button" data-demo-task="MKT-001" aria-pressed="false">
+          <span class="demo-case-name">合规任务</span>
+          <span class="demo-case-result passed">出图</span>
+        </button>
+        <button class="demo-case" type="button" data-demo-task="MKT-008" aria-pressed="false">
+          <span class="demo-case-name">价格低于底线</span>
+          <span class="demo-case-result blocked">阻断</span>
+        </button>
+        <button class="demo-case" type="button" data-demo-task="MKT-009" aria-pressed="false">
+          <span class="demo-case-name">广告违禁词</span>
+          <span class="demo-case-result blocked">阻断</span>
+        </button>
+        <button class="demo-case" type="button" data-demo-task="MKT-005" aria-pressed="false">
+          <span class="demo-case-name">修改产品外观</span>
+          <span class="demo-case-result blocked">阻断</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="营销任务工作区">
+      <aside class="pane">
+        <div class="pane-heading">
+          <h2>任务记录</h2>
+          <button class="secondary" id="refresh-button" type="button">刷新</button>
+        </div>
+        <div class="task-list" id="task-list">
+          <div class="empty">正在读取真实流水线结果</div>
+        </div>
+      </aside>
+
+      <section class="pane">
+        <div class="pane-heading">
+          <h2 id="input-pane-title">输入任务</h2>
+          <span class="pane-note" id="input-pane-note">字段会提交给本地规则接口</span>
+        </div>
+        <form id="task-form">
+          <div class="form-grid">
+            <div class="field">
+              <label for="task-id">任务编号</label>
+              <input id="task-id" name="task_id" required>
+            </div>
+            <div class="field">
+              <label for="image-type">图片类型</label>
+              <select id="image-type" name="img_type">
+                <option value="电商主图">电商主图</option>
+                <option value="促销海报">促销海报</option>
+                <option value="横版图片">横版图片</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="aspect-ratio">画布比例</label>
+              <select id="aspect-ratio" name="aspect_ratio">
+                <option value="1:1">1:1</option>
+                <option value="3:4">3:4</option>
+                <option value="16:9">16:9</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="promo-price">活动价</label>
+              <input id="promo-price" name="promo_price" type="number" min="0" step="0.01" required>
+            </div>
+            <div class="field">
+              <label for="min-price">最低允许价格</label>
+              <input id="min-price" name="min_price" type="number" min="0" step="0.01" value="89">
+            </div>
+            <div class="field">
+              <label for="deploy-date">投放日期</label>
+              <input id="deploy-date" name="deploy_date" type="date" required>
+            </div>
+            <div class="field">
+              <label for="campaign-start">活动开始日期</label>
+              <input id="campaign-start" name="campaign_start" type="date" required>
+            </div>
+            <div class="field">
+              <label for="campaign-end">活动结束日期</label>
+              <input id="campaign-end" name="campaign_end" type="date" required>
+            </div>
+            <div class="field full">
+              <label for="main-text">主文案</label>
+              <input id="main-text" name="main_text" maxlength="80" required>
+            </div>
+            <div class="field full">
+              <label for="sub-text">补充要求</label>
+              <textarea id="sub-text" name="sub_text" maxlength="240"></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="primary" id="run-button" type="submit" disabled>执行真实校验</button>
+            <button class="secondary" id="new-button" type="button">新建任务</button>
+          </div>
+          <p class="runtime-hint" id="runtime-hint">正在检查本地执行服务。</p>
+        </form>
+      </section>
+
+      <section class="pane result-pane" aria-live="polite">
+        <div class="pane-heading">
+          <h2>输出结果</h2>
+          <span class="pane-note" id="result-time">尚未选择任务</span>
+        </div>
+        <div id="result-content">
+          <div class="empty">选择一条记录查看审计结果和图片产物。</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast hidden" id="toast" role="status"></div>
+
+  <script>
+    const state = {
+      records: [],
+      selectedId: null,
+      apiOnline: false,
+      demoMode: false,
+      rulesVersion: "未知",
+      report: null
+    };
+
+    const fields = {
+      task_id: document.getElementById("task-id"),
+      img_type: document.getElementById("image-type"),
+      aspect_ratio: document.getElementById("aspect-ratio"),
+      promo_price: document.getElementById("promo-price"),
+      min_price: document.getElementById("min-price"),
+      deploy_date: document.getElementById("deploy-date"),
+      campaign_start: document.getElementById("campaign-start"),
+      campaign_end: document.getElementById("campaign-end"),
+      main_text: document.getElementById("main-text"),
+      sub_text: document.getElementById("sub-text")
+    };
+
+    const taskList = document.getElementById("task-list");
+    const resultContent = document.getElementById("result-content");
+    const connectionStatus = document.getElementById("connection-status");
+    const runtimeHint = document.getElementById("runtime-hint");
+    const runButton = document.getElementById("run-button");
+    const formActions = document.querySelector(".form-actions");
+    const inputPaneTitle = document.getElementById("input-pane-title");
+    const inputPaneNote = document.getElementById("input-pane-note");
+    const demoNote = document.getElementById("demo-note");
+    const demoCases = Array.from(document.querySelectorAll("[data-demo-task]"));
+    const toast = document.getElementById("toast");
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = String(value ?? "");
+    }
+
+    function showToast(message, isError = false) {
+      toast.textContent = message;
+      toast.className = `toast${isError ? " error" : ""}`;
+      window.setTimeout(() => {
+        toast.className = "toast hidden";
+      }, 3200);
+    }
+
+    function statusLabel(status) {
+      return status === "PASSED" ? "通过" : "阻断";
+    }
+
+    function statusClass(status) {
+      return status === "PASSED" ? "passed" : "blocked";
+    }
+
+    function updateMetrics() {
+      const total = state.records.length;
+      const passed = state.records.filter((record) => record.status === "PASSED").length;
+      const blocked = total - passed;
+      const images = state.records.filter((record) => Boolean(record.generated_image)).length;
+      setText("metric-total", total);
+      setText("metric-passed", passed);
+      setText("metric-blocked", blocked);
+      setText("metric-images", images);
+    }
+
+    function createStatus(status) {
+      const badge = document.createElement("span");
+      badge.className = `status ${statusClass(status)}`;
+      badge.textContent = statusLabel(status);
+      return badge;
+    }
+
+    function renderTaskList() {
+      taskList.replaceChildren();
+      if (!state.records.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "当前没有可展示的任务记录。";
+        taskList.appendChild(empty);
+        return;
+      }
+
+      state.records.forEach((record) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `task-button${record.task_id === state.selectedId ? " active" : ""}`;
+        button.addEventListener("click", () => selectRecord(record.task_id));
+
+        const top = document.createElement("div");
+        top.className = "task-line";
+        const id = document.createElement("span");
+        id.className = "task-id";
+        id.textContent = record.task_id;
+        top.append(id, createStatus(record.status));
+
+        const copy = document.createElement("div");
+        copy.className = "task-copy";
+        copy.textContent = record.main_text || "无主文案";
+        button.append(top, copy);
+        taskList.appendChild(button);
+      });
+    }
+
+    function syncDemoCases(taskId) {
+      demoCases.forEach((button) => {
+        const active = button.dataset.demoTask === taskId;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+
+    function configureRuntimeUI(apiOnline) {
+      state.apiOnline = apiOnline;
+      state.demoMode = !apiOnline;
+      Object.values(fields).forEach((field) => {
+        field.disabled = !apiOnline;
+      });
+      formActions.classList.toggle("hidden", !apiOnline);
+      if (apiOnline) {
+        connectionStatus.textContent = "本地真实执行服务已连接";
+        connectionStatus.classList.add("live");
+        inputPaneTitle.textContent = "输入任务";
+        inputPaneNote.textContent = "字段会提交给本地规则接口";
+        demoNote.textContent = "选择预置案例快速了解规则，也可以填写新任务执行真实校验。";
+        runtimeHint.textContent = "当前为真实执行模式。提交任务后将调用同一套规则脚本与图层组装器。";
+        runButton.disabled = false;
+      } else {
+        connectionStatus.textContent = "在线案例演示";
+        connectionStatus.classList.add("live");
+        inputPaneTitle.textContent = "案例输入快照";
+        inputPaneNote.textContent = "由真实流水线预生成，不在浏览器中模拟规则";
+        demoNote.textContent = "选择一个场景，查看 Skill 规则与 Python 流水线预生成的真实结果。";
+        runtimeHint.textContent = "当前为可交互案例演示。启动本地服务后可填写新任务并执行真实校验。";
+        runButton.disabled = true;
+      }
+    }
+
+    function setForm(record) {
+      Object.entries(fields).forEach(([key, field]) => {
+        const value = record[key];
+        field.value = value === null || value === undefined ? "" : String(value);
+      });
+    }
+
+    function collectForm() {
+      const payload = {};
+      Object.entries(fields).forEach(([key, field]) => {
+        payload[key] = field.value.trim();
+      });
+      payload.promo_price = payload.promo_price === "" ? null : Number(payload.promo_price);
+      payload.min_price = payload.min_price === "" ? null : Number(payload.min_price);
+      return payload;
+    }
+
+    function appendRawResult(record) {
+      const details = document.createElement("details");
+      const summary = document.createElement("summary");
+      summary.textContent = "查看结构化结果";
+      const pre = document.createElement("pre");
+      pre.textContent = JSON.stringify(record, null, 2);
+      details.append(summary, pre);
+      return details;
+    }
+
+    function renderResult(record, cacheBust = false) {
+      resultContent.replaceChildren();
+      if (!record) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "选择一条记录查看审计结果和图片产物。";
+        resultContent.appendChild(empty);
+        return;
+      }
+
+      const summary = document.createElement("div");
+      summary.className = "result-summary";
+      const title = document.createElement("div");
+      title.className = "result-title";
+      const heading = document.createElement("h3");
+      heading.textContent = `${record.task_id} 审计结果`;
+      title.append(heading, createStatus(record.status));
+
+      const version = document.createElement("div");
+      version.className = "rule-version";
+      version.textContent = `规则版本：${record.rules_version || state.rulesVersion}`;
+      summary.append(title, version);
+
+      if (record.status === "PASSED") {
+        const clear = document.createElement("p");
+        clear.className = "clear-result";
+        clear.textContent = "全部业务规则校验通过，允许进入图片组装。";
+        summary.appendChild(clear);
+      } else {
+        const list = document.createElement("ul");
+        list.className = "violations";
+        const violations = Array.isArray(record.violations) ? record.violations : [];
+        if (!violations.length && record.blocked_reason) {
+          const item = document.createElement("li");
+          item.className = "violation";
+          item.textContent = record.blocked_reason;
+          list.appendChild(item);
+        }
+        violations.forEach((violation) => {
+          const item = document.createElement("li");
+          item.className = "violation";
+          item.textContent = violation.message || "未提供违规说明";
+          list.appendChild(item);
+        });
+        summary.appendChild(list);
+      }
+
+      const preview = document.createElement("div");
+      preview.className = "preview";
+      if (record.status === "PASSED" && record.generated_image) {
+        const image = document.createElement("img");
+        const suffix = cacheBust ? `?t=${Date.now()}` : "";
+        image.src = `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
+        image.alt = `${record.task_id} 通过规则审计后生成的营销图片`;
+        image.addEventListener("error", () => {
+          preview.replaceChildren();
+          const failed = document.createElement("div");
+          failed.className = "preview-empty";
+          failed.textContent = "图片记录存在，但文件加载失败。请重新运行流水线。";
+          preview.appendChild(failed);
+        });
+        preview.appendChild(image);
+      } else {
+        const empty = document.createElement("div");
+        empty.className = "preview-empty";
+        empty.textContent = "任务已被规则阻断。本任务不会生成图片，也不会复用历史图片。";
+        preview.appendChild(empty);
+      }
+
+      resultContent.append(summary, preview);
+      if (record.status === "PASSED" && record.generated_image) {
+        const download = document.createElement("a");
+        download.className = "download";
+        download.href = `generated_output/${encodeURIComponent(record.generated_image)}`;
+        download.download = record.generated_image;
+        download.textContent = "下载合规图片";
+        resultContent.appendChild(download);
+      }
+      resultContent.appendChild(appendRawResult(record));
+      setText("result-time", record.task_id);
+    }
+
+    function selectRecord(taskId) {
+      const record = state.records.find((item) => item.task_id === taskId);
+      if (!record) return;
+      state.selectedId = taskId;
+      setForm(record);
+      renderTaskList();
+      renderResult(record);
+      syncDemoCases(taskId);
+    }
+
+    function newTask() {
+      state.selectedId = null;
+      const today = new Date().toISOString().slice(0, 10);
+      setForm({
+        task_id: `CUSTOM-${Date.now().toString().slice(-6)}`,
+        img_type: "电商主图",
+        aspect_ratio: "1:1",
+        promo_price: 99,
+        min_price: 89,
+        deploy_date: today,
+        campaign_start: today,
+        campaign_end: today,
+        main_text: "",
+        sub_text: ""
+      });
+      renderTaskList();
+      renderResult(null);
+      fields.main_text.focus();
+    }
+
+    function normalizeReport(payload) {
+      if (Array.isArray(payload)) {
+        return {
+          rules_version: payload[0]?.rules_version || "旧版",
+          summary: {},
+          records: payload
+        };
+      }
+      return payload;
+    }
+
+    async function fetchJson(url, options = {}) {
+      const response = await fetch(url, {
+        cache: "no-store",
+        ...options
+      });
+      if (!response.ok) {
+        throw new Error(`请求失败：${response.status}`);
+      }
+      return response.json();
+    }
+
+    async function detectRuntime() {
+      try {
+        const status = await fetchJson("/api/status");
+        const apiOnline = Boolean(status.online);
+        state.rulesVersion = status.rules_version || "未知";
+        configureRuntimeUI(apiOnline);
+      } catch {
+        configureRuntimeUI(false);
+      }
+    }
+
+    async function loadRecords() {
+      taskList.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "empty";
+      loading.textContent = "正在读取真实流水线结果。";
+      taskList.appendChild(loading);
+
+      try {
+        const payload = state.apiOnline
+          ? await fetchJson("/api/tasks")
+          : await fetchJson("generated_output/pipeline_result.json");
+        const report = normalizeReport(payload);
+        state.report = report;
+        state.rulesVersion = report.rules_version || state.rulesVersion;
+        state.records = Array.isArray(report.records) ? report.records : [];
+        updateMetrics();
+        renderTaskList();
+        if (state.records.length) {
+          const preferred = state.records.find((record) => record.task_id === state.selectedId);
+          const defaultDemo = state.demoMode
+            ? state.records.find((record) => record.task_id === "MKT-001")
+            : null;
+          selectRecord((preferred || defaultDemo || state.records[0]).task_id);
+        } else {
+          renderResult(null);
+          syncDemoCases(null);
+        }
+      } catch (error) {
+        state.records = [];
+        updateMetrics();
+        taskList.replaceChildren();
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = `无法读取流水线结果。${error.message}`;
+        taskList.appendChild(empty);
+        renderResult(null);
+        syncDemoCases(null);
+      }
+    }
+
+    async function runTask(event) {
+      event.preventDefault();
+      if (!state.apiOnline) {
+        showToast("请先启动本地真实执行服务。", true);
+        return;
+      }
+      if (!event.currentTarget.reportValidity()) return;
+
+      runButton.disabled = true;
+      runButton.textContent = "正在审计和组装";
+      try {
+        const payload = collectForm();
+        const result = await fetchJson("/api/run", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+        const record = result.record;
+        state.rulesVersion = result.rules_version || state.rulesVersion;
+        const index = state.records.findIndex((item) => item.task_id === record.task_id);
+        if (index >= 0) {
+          state.records[index] = record;
+        } else {
+          state.records.unshift(record);
+        }
+        state.selectedId = record.task_id;
+        updateMetrics();
+        renderTaskList();
+        setForm(record);
+        renderResult(record, true);
+        showToast(record.status === "PASSED" ? "审计通过，图片已生成。" : "任务已阻断，未生成图片。");
+      } catch (error) {
+        showToast(error.message || "执行失败，请检查本地服务。", true);
+      } finally {
+        runButton.disabled = !state.apiOnline;
+        runButton.textContent = "执行真实校验";
+      }
+    }
+
+    document.getElementById("task-form").addEventListener("submit", runTask);
+    document.getElementById("new-button").addEventListener("click", newTask);
+    document.getElementById("refresh-button").addEventListener("click", loadRecords);
+    demoCases.forEach((button) => {
+      button.addEventListener("click", () => {
+        const taskId = button.dataset.demoTask;
+        if (!state.records.some((record) => record.task_id === taskId)) {
+          showToast("案例数据尚未加载完成，请稍后再试。", true);
+          return;
+        }
+        selectRecord(taskId);
+        const scrollTarget = window.matchMedia("(max-width: 640px)").matches
+          ? document.querySelector(".result-pane")
+          : document.querySelector(".workspace");
+        scrollTarget.scrollIntoView({
+          behavior: "auto",
+          block: "start"
+        });
+      });
+    });
+
+    async function initialize() {
+      await detectRuntime();
+      await loadRecords();
+    }
+
+    initialize();
+  </script>
+</body>
+</html>

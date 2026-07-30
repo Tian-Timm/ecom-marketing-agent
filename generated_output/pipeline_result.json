@@ -1,0 +1,272 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-30T14:34:58+00:00",
+  "rules_version": "2026-07-30.1",
+  "source": "marketing_tasks.csv",
+  "summary": {
+    "total": 10,
+    "passed": 4,
+    "blocked": 6,
+    "images_generated": 4
+  },
+  "records": [
+    {
+      "task_id": "MKT-001",
+      "img_type": "电商主图",
+      "aspect_ratio": "1:1",
+      "deploy_date": "2026-07-25",
+      "campaign_name": "日常商品展示",
+      "promo_price": 129.0,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-08-31",
+      "main_text": "城市轻装 随时出发",
+      "sub_text": "白底展示产品主体",
+      "min_price": 89.0,
+      "status": "PASSED",
+      "blocked_reason": "",
+      "violations": [],
+      "rules_version": "2026-07-30.1",
+      "generated_image": "MKT-001_rendered.png",
+      "artifact": {
+        "filename": "MKT-001_rendered.png",
+        "width": 800,
+        "height": 800,
+        "format": "PNG"
+      }
+    },
+    {
+      "task_id": "MKT-002",
+      "img_type": "电商主图",
+      "aspect_ratio": "1:1",
+      "deploy_date": "2026-07-27",
+      "campaign_name": "夏日出行周",
+      "promo_price": 99.0,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-07-31",
+      "main_text": "夏日出行 轻装随行",
+      "sub_text": "突出活动价和500ml容量",
+      "min_price": 89.0,
+      "status": "PASSED",
+      "blocked_reason": "",
+      "violations": [],
+      "rules_version": "2026-07-30.1",
+      "generated_image": "MKT-002_rendered.png",
+      "artifact": {
+        "filename": "MKT-002_rendered.png",
+        "width": 800,
+        "height": 800,
+        "format": "PNG"
+      }
+    },
+    {
+      "task_id": "MKT-003",
+      "img_type": "促销海报",
+      "aspect_ratio": "3:4",
+      "deploy_date": "2026-07-28",
+      "campaign_name": "夏日出行周",
+      "promo_price": 99.0,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-07-31",
+      "main_text": "轻量随行 限时优惠",
+      "sub_text": "保留底部活动说明区域",
+      "min_price": 89.0,
+      "status": "PASSED",
+      "blocked_reason": "",
+      "violations": [],
+      "rules_version": "2026-07-30.1",
+      "generated_image": "MKT-003_rendered.png",
+      "artifact": {
+        "filename": "MKT-003_rendered.png",
+        "width": 600,
+        "height": 800,
+        "format": "PNG"
+      }
+    },
+    {
+      "task_id": "MKT-004",
+      "img_type": "电商主图",
+      "aspect_ratio": "1:1",
+      "deploy_date": "2026-07-30",
+      "campaign_name": "会员专享日",
+      "promo_price": 109.0,
+      "campaign_start": "2026-07-29",
+      "campaign_end": "2026-07-31",
+      "main_text": "会员专享 城市随行",
+      "sub_text": "突出会员活动信息",
+      "min_price": 89.0,
+      "status": "PASSED",
+      "blocked_reason": "",
+      "violations": [],
+      "rules_version": "2026-07-30.1",
+      "generated_image": "MKT-004_rendered.png",
+      "artifact": {
+        "filename": "MKT-004_rendered.png",
+        "width": 800,
+        "height": 800,
+        "format": "PNG"
+      }
+    },
+    {
+      "task_id": "MKT-005",
+      "img_type": "促销海报",
+      "aspect_ratio": "3:4",
+      "deploy_date": "2026-07-31",
+      "campaign_name": "结营限时购",
+      "promo_price": 89.0,
+      "campaign_start": "2026-07-30",
+      "campaign_end": "2026-07-31",
+      "main_text": "限时好价 轻装出发",
+      "sub_text": "需将杯身改成粉红色匹配氛围",
+      "min_price": 89.0,
+      "status": "BLOCKED",
+      "blocked_reason": "要求修改产品外观或颜色：“改成粉红色”",
+      "violations": [
+        {
+          "code": "PRODUCT_APPEARANCE_CHANGE_FORBIDDEN",
+          "field": "copy",
+          "message": "要求修改产品外观或颜色：“改成粉红色”",
+          "value": "改成粉红色"
+        }
+      ],
+      "rules_version": "2026-07-30.1",
+      "generated_image": null,
+      "artifact": null
+    },
+    {
+      "task_id": "MKT-006",
+      "img_type": "电商主图",
+      "aspect_ratio": "1:1",
+      "deploy_date": "2026-07-29",
+      "campaign_name": "夏日出行周",
+      "promo_price": null,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-07-31",
+      "main_text": "夏日出行 轻装随行",
+      "sub_text": "突出活动价格",
+      "min_price": 89.0,
+      "status": "BLOCKED",
+      "blocked_reason": "活动价缺失",
+      "violations": [
+        {
+          "code": "PRICE_MISSING",
+          "field": "promo_price",
+          "message": "活动价缺失",
+          "value": null
+        }
+      ],
+      "rules_version": "2026-07-30.1",
+      "generated_image": null,
+      "artifact": null
+    },
+    {
+      "task_id": "MKT-007",
+      "img_type": "促销海报",
+      "aspect_ratio": "3:4",
+      "deploy_date": "2026-08-02",
+      "campaign_name": "夏日出行周",
+      "promo_price": 99.0,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-07-31",
+      "main_text": "夏日出行 轻装随行",
+      "sub_text": "用于周末社交平台投放",
+      "min_price": 89.0,
+      "status": "BLOCKED",
+      "blocked_reason": "投放日期 2026-08-02 超出活动周期 2026-07-25 至 2026-07-31",
+      "violations": [
+        {
+          "code": "DEPLOY_DATE_OUTSIDE_CAMPAIGN",
+          "field": "deploy_date",
+          "message": "投放日期 2026-08-02 超出活动周期 2026-07-25 至 2026-07-31",
+          "value": "2026-08-02"
+        }
+      ],
+      "rules_version": "2026-07-30.1",
+      "generated_image": null,
+      "artifact": null
+    },
+    {
+      "task_id": "MKT-008",
+      "img_type": "电商主图",
+      "aspect_ratio": "1:1",
+      "deploy_date": "2026-07-30",
+      "campaign_name": "限时秒杀",
+      "promo_price": 69.0,
+      "campaign_start": "2026-07-30",
+      "campaign_end": "2026-07-31",
+      "main_text": "限时秒杀 仅此两天",
+      "sub_text": "价格字号需要明显",
+      "min_price": 89.0,
+      "status": "BLOCKED",
+      "blocked_reason": "活动价 69 元低于最低允许价格 89 元",
+      "violations": [
+        {
+          "code": "PRICE_BELOW_MINIMUM",
+          "field": "promo_price",
+          "message": "活动价 69 元低于最低允许价格 89 元",
+          "value": 69.0
+        }
+      ],
+      "rules_version": "2026-07-30.1",
+      "generated_image": null,
+      "artifact": null
+    },
+    {
+      "task_id": "MKT-009",
+      "img_type": "促销海报",
+      "aspect_ratio": "3:4",
+      "deploy_date": "2026-07-30",
+      "campaign_name": "夏日出行周",
+      "promo_price": 99.0,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-07-31",
+      "main_text": "全网第一的城市保温杯",
+      "sub_text": "突出品质感和活动价",
+      "min_price": 89.0,
+      "status": "BLOCKED",
+      "blocked_reason": "文案包含禁用词“全网第一”",
+      "violations": [
+        {
+          "code": "FORBIDDEN_WORD_DETECTED",
+          "field": "copy",
+          "message": "文案包含禁用词“全网第一”",
+          "value": "全网第一"
+        }
+      ],
+      "rules_version": "2026-07-30.1",
+      "generated_image": null,
+      "artifact": null
+    },
+    {
+      "task_id": "MKT-010",
+      "img_type": "横版Banner",
+      "aspect_ratio": "16:9",
+      "deploy_date": "2026-07-30",
+      "campaign_name": "夏日出行周",
+      "promo_price": 99.0,
+      "campaign_start": "2026-07-25",
+      "campaign_end": "2026-07-31",
+      "main_text": "夏日出行 轻装随行",
+      "sub_text": "把杯身改成红色以匹配促销氛围",
+      "min_price": 89.0,
+      "status": "BLOCKED",
+      "blocked_reason": "画布比例 16:9 不在允许范围；要求修改产品外观或颜色：“改成红色”",
+      "violations": [
+        {
+          "code": "CANVAS_RATIO_NOT_ALLOWED",
+          "field": "aspect_ratio",
+          "message": "画布比例 16:9 不在允许范围",
+          "value": "16:9"
+        },
+        {
+          "code": "PRODUCT_APPEARANCE_CHANGE_FORBIDDEN",
+          "field": "copy",
+          "message": "要求修改产品外观或颜色：“改成红色”",
+          "value": "改成红色"
+        }
+      ],
+      "rules_version": "2026-07-30.1",
+      "generated_image": null,
+      "artifact": null
+    }
+  ]
+}

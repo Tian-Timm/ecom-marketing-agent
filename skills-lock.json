@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "fde-mock-marketing-assets": {
+      "source": "letianpaiCY/Watcha-FDE",
+      "sourceType": "github",
+      "skillPath": "skills/fde-mock-marketing-assets/SKILL.md",
+      "computedHash": "cc1ca819dae7fa8f56360a9686e0276b3c65a8e421c027499f500ff3f04b427a"
+    }
+  }
+}
