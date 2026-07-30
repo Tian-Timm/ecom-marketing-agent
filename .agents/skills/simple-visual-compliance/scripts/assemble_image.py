@@ -65,6 +65,28 @@ def fit_font(
             return font
     return get_font(min_size, bold=True)
 
+def find_red_badge_bounds(image: Image.Image) -> tuple[int, int, int, int]:
+    """从模板顶部右侧识别红色标签，避免画幅缩放后继续使用固定坐标。"""
+    search_left = image.width // 2
+    search_bottom = min(120, image.height)
+    search_area = image.convert("RGB").crop(
+        (search_left, 0, image.width, search_bottom)
+    )
+    red_pixels = Image.new("1", search_area.size)
+    red_pixels.putdata([
+        red > 200 and green < 100 and blue < 100
+        for red, green, blue in search_area.get_flattened_data()
+    ])
+    bounds = red_pixels.getbbox()
+    if bounds is None:
+        raise ValueError("背景模板中未找到顶部红色标签")
+    return (
+        search_left + bounds[0],
+        bounds[1],
+        search_left + bounds[2],
+        bounds[3],
+    )
+
 def assemble_single_image(rec: Dict[str, Any], output_dir: Path) -> Dict[str, Any]:
     if rec.get("status") != "PASSED":
         raise ValueError("只有 PASSED 任务可以进入图片组装")
@@ -118,9 +140,27 @@ def assemble_single_image(rec: Dict[str, Any], output_dir: Path) -> Dict[str, An
         x_center = copy_left + copy_width // 2
         draw.text((x_center, y_start + 80), main_text, fill=(255, 255, 255), font=font_main_text, anchor="mm")
 
-    font_badge = get_font(18 if width == 600 else 22, bold=True)
-    badge_x = width - 68
-    draw.text((badge_x, 30), "爆款推荐", fill=(255, 255, 255), font=font_badge, anchor="mm")
+    badge_text = "爆款推荐"
+    badge_left, badge_top, badge_right, badge_bottom = find_red_badge_bounds(canvas)
+    badge_padding = 10
+    font_badge = fit_font(
+        draw,
+        badge_text,
+        max_width=badge_right - badge_left - badge_padding * 2,
+        start_size=18 if width == 600 else 22,
+        min_size=14,
+    )
+    badge_center = (
+        (badge_left + badge_right) // 2,
+        (badge_top + badge_bottom) // 2,
+    )
+    draw.text(
+        badge_center,
+        badge_text,
+        fill=(255, 255, 255),
+        font=font_badge,
+        anchor="mm",
+    )
 
     output_dir.mkdir(parents=True, exist_ok=True)
     task_id = safe_task_id(rec.get("task_id"))
