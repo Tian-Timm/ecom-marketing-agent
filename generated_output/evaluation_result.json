@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "dataset": "marketing_tasks.csv",
+  "rules_version": "2026-07-30.1",
+  "duration_seconds": 0.568,
+  "summary": {
+    "total_cases": 10,
+    "expected_anomalies": 6,
+    "status_correct": 10,
+    "status_accuracy": 1.0,
+    "detected_anomalies": 6,
+    "anomaly_detection_rate": 1.0,
+    "rule_code_correct": 10,
+    "rule_code_match_rate": 1.0,
+    "images_generated": 4
+  },
+  "mismatches": [],
+  "cases": [
+    {
+      "task_id": "MKT-001",
+      "expected_status": "PASSED",
+      "actual_status": "PASSED",
+      "expected_violation_codes": [],
+      "actual_violation_codes": [],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-002",
+      "expected_status": "PASSED",
+      "actual_status": "PASSED",
+      "expected_violation_codes": [],
+      "actual_violation_codes": [],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-003",
+      "expected_status": "PASSED",
+      "actual_status": "PASSED",
+      "expected_violation_codes": [],
+      "actual_violation_codes": [],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-004",
+      "expected_status": "PASSED",
+      "actual_status": "PASSED",
+      "expected_violation_codes": [],
+      "actual_violation_codes": [],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-005",
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_violation_codes": [
+        "PRODUCT_APPEARANCE_CHANGE_FORBIDDEN"
+      ],
+      "actual_violation_codes": [
+        "PRODUCT_APPEARANCE_CHANGE_FORBIDDEN"
+      ],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-006",
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_violation_codes": [
+        "PRICE_MISSING"
+      ],
+      "actual_violation_codes": [
+        "PRICE_MISSING"
+      ],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-007",
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_violation_codes": [
+        "DEPLOY_DATE_OUTSIDE_CAMPAIGN"
+      ],
+      "actual_violation_codes": [
+        "DEPLOY_DATE_OUTSIDE_CAMPAIGN"
+      ],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-008",
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_violation_codes": [
+        "PRICE_BELOW_MINIMUM"
+      ],
+      "actual_violation_codes": [
+        "PRICE_BELOW_MINIMUM"
+      ],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-009",
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_violation_codes": [
+        "FORBIDDEN_WORD_DETECTED"
+      ],
+      "actual_violation_codes": [
+        "FORBIDDEN_WORD_DETECTED"
+      ],
+      "status_matches": true,
+      "rule_codes_match": true
+    },
+    {
+      "task_id": "MKT-010",
+      "expected_status": "BLOCKED",
+      "actual_status": "BLOCKED",
+      "expected_violation_codes": [
+        "CANVAS_RATIO_NOT_ALLOWED",
+        "PRODUCT_APPEARANCE_CHANGE_FORBIDDEN"
+      ],
+      "actual_violation_codes": [
+        "CANVAS_RATIO_NOT_ALLOWED",
+        "PRODUCT_APPEARANCE_CHANGE_FORBIDDEN"
+      ],
+      "status_matches": true,
+      "rule_codes_match": true
+    }
+  ]
+}

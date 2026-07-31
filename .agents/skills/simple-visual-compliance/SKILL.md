@@ -51,6 +51,16 @@ python .agents/skills/simple-visual-compliance/scripts/serve_app.py
 
 浏览器打开 `http://127.0.0.1:8765`。
 
+## 可复现评测
+
+评测真值独立保存在 `assets/evaluation_ground_truth.json`，不进入业务输入和规则判断。
+
+```bash
+python .agents/skills/simple-visual-compliance/scripts/evaluate_fixture.py
+```
+
+评测报告输出到 `generated_output/evaluation_result.json`，包含任务状态一致率、异常检出率、规则码一致率和执行耗时。
+
 ## 输出约束
 
 - `PASSED`：包含 `generated_image` 和图片元数据。
