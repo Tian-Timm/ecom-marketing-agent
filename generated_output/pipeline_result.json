@@ -1,12 +1,15 @@
 {
-  "schema_version": "1.0",
-  "generated_at": "2026-07-30T23:35:21+00:00",
+  "schema_version": "2.0",
+  "pipeline_version": "2026-07-31.1",
+  "generated_at": "2026-07-31T05:15:20+00:00",
   "rules_version": "2026-07-30.1",
   "source": "marketing_tasks.csv",
   "summary": {
     "total": 10,
     "passed": 4,
     "blocked": 6,
+    "review_required": 0,
+    "failed": 0,
     "images_generated": 4
   },
   "records": [
@@ -32,7 +35,54 @@
         "width": 800,
         "height": 800,
         "format": "PNG"
-      }
+      },
+      "input_hash": "a3c501c33e88765c",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.277+00:00",
+      "duration_ms": 151.77,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.278+00:00",
+          "duration_ms": 0.09,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.278+00:00",
+          "duration_ms": 0.62,
+          "detail": "价格、日期、画布比例和文案检查通过。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.278+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.278+00:00",
+          "duration_ms": 151.0,
+          "detail": "营销图片已生成。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-002",
@@ -56,7 +106,54 @@
         "width": 800,
         "height": 800,
         "format": "PNG"
-      }
+      },
+      "input_hash": "b55ab656551d8cce",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.429+00:00",
+      "duration_ms": 96.93,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "duration_ms": 0.09,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "duration_ms": 0.02,
+          "detail": "价格、日期、画布比例和文案检查通过。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "duration_ms": 96.78,
+          "detail": "营销图片已生成。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-003",
@@ -80,7 +177,54 @@
         "width": 600,
         "height": 800,
         "format": "PNG"
-      }
+      },
+      "input_hash": "759fec8f923b8e63",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.526+00:00",
+      "duration_ms": 90.53,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "duration_ms": 0.1,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "duration_ms": 0.02,
+          "detail": "价格、日期、画布比例和文案检查通过。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "duration_ms": 90.32,
+          "detail": "营销图片已生成。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-004",
@@ -104,7 +248,54 @@
         "width": 800,
         "height": 800,
         "format": "PNG"
-      }
+      },
+      "input_hash": "6517e4298e05f81f",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.617+00:00",
+      "duration_ms": 100.04,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "duration_ms": 0.07,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "duration_ms": 0.01,
+          "detail": "价格、日期、画布比例和文案检查通过。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "duration_ms": 99.91,
+          "detail": "营销图片已生成。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-005",
@@ -130,7 +321,54 @@
       ],
       "rules_version": "2026-07-30.1",
       "generated_image": null,
-      "artifact": null
+      "artifact": null,
+      "input_hash": "3cc0f5f4ac8d4cd9",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.717+00:00",
+      "duration_ms": 0.53,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.08,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "BLOCKED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.02,
+          "detail": "发现 1 项需要修改的内容。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.41,
+          "detail": "请先处理审查问题，再生成营销图片。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-006",
@@ -156,7 +394,54 @@
       ],
       "rules_version": "2026-07-30.1",
       "generated_image": null,
-      "artifact": null
+      "artifact": null,
+      "input_hash": "9b38dd4dc5db3500",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.717+00:00",
+      "duration_ms": 0.39,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.04,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "BLOCKED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.02,
+          "detail": "发现 1 项需要修改的内容。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "duration_ms": 0.31,
+          "detail": "请先处理审查问题，再生成营销图片。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-007",
@@ -182,7 +467,54 @@
       ],
       "rules_version": "2026-07-30.1",
       "generated_image": null,
-      "artifact": null
+      "artifact": null,
+      "input_hash": "13fb27f8ff005eb0",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.718+00:00",
+      "duration_ms": 0.33,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.04,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "BLOCKED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.01,
+          "detail": "发现 1 项需要修改的内容。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.26,
+          "detail": "请先处理审查问题，再生成营销图片。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-008",
@@ -208,7 +540,54 @@
       ],
       "rules_version": "2026-07-30.1",
       "generated_image": null,
-      "artifact": null
+      "artifact": null,
+      "input_hash": "210dadb76ea750d1",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.718+00:00",
+      "duration_ms": 0.31,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.03,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "BLOCKED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.01,
+          "detail": "发现 1 项需要修改的内容。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.25,
+          "detail": "请先处理审查问题，再生成营销图片。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-009",
@@ -234,7 +613,54 @@
       ],
       "rules_version": "2026-07-30.1",
       "generated_image": null,
-      "artifact": null
+      "artifact": null,
+      "input_hash": "0464612208b70b53",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.718+00:00",
+      "duration_ms": 0.32,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.03,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "BLOCKED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.01,
+          "detail": "发现 1 项需要修改的内容。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "duration_ms": 0.26,
+          "detail": "请先处理审查问题，再生成营销图片。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     },
     {
       "task_id": "MKT-010",
@@ -266,7 +692,54 @@
       ],
       "rules_version": "2026-07-30.1",
       "generated_image": null,
-      "artifact": null
+      "artifact": null,
+      "input_hash": "815326de7d1c2a35",
+      "pipeline_version": "2026-07-31.1",
+      "source": "marketing_tasks.csv",
+      "started_at": "2026-07-31T05:15:20.719+00:00",
+      "duration_ms": 0.35,
+      "execution_trace": [
+        {
+          "name": "normalize",
+          "label": "信息整理",
+          "status": "COMPLETED",
+          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "duration_ms": 0.04,
+          "detail": "已整理并识别任务信息。"
+        },
+        {
+          "name": "deterministic_audit",
+          "label": "规则审查",
+          "status": "BLOCKED",
+          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "duration_ms": 0.03,
+          "detail": "发现 2 项需要修改的内容。"
+        },
+        {
+          "name": "semantic_review",
+          "label": "语义复核",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "duration_ms": 0.0,
+          "detail": "语义复核暂未启用。"
+        },
+        {
+          "name": "render",
+          "label": "图片生成",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "duration_ms": 0.26,
+          "detail": "请先处理审查问题，再生成营销图片。"
+        },
+        {
+          "name": "delivery",
+          "label": "飞书交付",
+          "status": "NOT_CONFIGURED",
+          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "duration_ms": 0.0,
+          "detail": "飞书交付暂未启用。"
+        }
+      ]
     }
   ]
 }

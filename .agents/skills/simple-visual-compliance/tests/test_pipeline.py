@@ -17,7 +17,7 @@ sys.path.insert(0, str(STANDARDIZER_DIR))
 
 from audit_text import audit_batch, load_rules
 from assemble_image import STAND_BG_PATH, assemble_batch, assemble_single_image
-from run_pipeline import run_pipeline, write_report
+from run_pipeline import execute_task, run_pipeline, write_report
 
 
 def valid_record(**changes: object) -> dict:
@@ -81,6 +81,28 @@ class RuleAuditTests(unittest.TestCase):
 
 
 class PipelineTests(unittest.TestCase):
+    def test_execute_task_returns_auditable_result_contract(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = execute_task(valid_record(), Path(temp_dir), source="test")
+            self.assertEqual(result["status"], "PASSED")
+            self.assertEqual(result["source"], "test")
+            self.assertEqual(len(result["input_hash"]), 16)
+            self.assertGreaterEqual(result["duration_ms"], 0)
+            self.assertEqual(
+                [step["name"] for step in result["execution_trace"]],
+                [
+                    "normalize",
+                    "deterministic_audit",
+                    "semantic_review",
+                    "render",
+                    "delivery",
+                ],
+            )
+            self.assertEqual(
+                result["execution_trace"][2]["status"],
+                "NOT_CONFIGURED",
+            )
+
     def test_badge_text_stays_inside_red_badge(self) -> None:
         for aspect_ratio in ("1:1", "3:4"):
             with self.subTest(aspect_ratio=aspect_ratio):
@@ -158,7 +180,8 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(len(list(output_dir.glob("*_rendered.png"))), 4)
             self.assertTrue(report_path.exists())
             saved = json.loads(report_path.read_text(encoding="utf-8"))
-            self.assertEqual(saved["schema_version"], "1.0")
+            self.assertEqual(saved["schema_version"], "2.0")
+            self.assertEqual(saved["summary"]["failed"], 0)
             blocked = [item for item in saved["records"] if item["status"] == "BLOCKED"]
             self.assertTrue(all(item["generated_image"] is None for item in blocked))
 

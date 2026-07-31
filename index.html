@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CHA CUP 营销图片合规审计与确定性组装工作台">
+  <meta name="description" content="CHA CUP 营销图片合规审查与生成工作台">
   <title>CHA CUP 营销图片合规工作台</title>
   <style>
     :root {
@@ -1209,6 +1209,18 @@
       background: var(--danger-soft);
     }
 
+    .status.review-required {
+      border-color: #dec78c;
+      color: #765b16;
+      background: #fbf7e8;
+    }
+
+    .status.failed {
+      border-color: #c7c7ce;
+      color: #52525b;
+      background: #f1f1f3;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1404,6 +1416,111 @@
       font-size: 11px;
     }
 
+    .review-result,
+    .failed-result {
+      padding: 9px;
+      border: 1px solid #dec78c;
+      border-left: 2px solid #8a6a19;
+      border-radius: var(--radius-control);
+      color: #6f5513;
+      background: #fbf7e8;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .failed-result {
+      border-color: #c7c7ce;
+      border-left-color: #71717a;
+      color: #52525b;
+      background: #f4f4f5;
+    }
+
+    .execution-panel {
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: #ffffff;
+    }
+
+    .execution-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 9px;
+    }
+
+    .execution-summary-label {
+      color: var(--ink);
+      font-size: 11px;
+      font-weight: 680;
+    }
+
+    .execution-meta {
+      color: var(--muted);
+      font: 9px/1.4 var(--font-mono);
+      white-space: nowrap;
+    }
+
+    .execution-trace {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 2px 10px 8px;
+      list-style: none;
+    }
+
+    .execution-step {
+      display: grid;
+      grid-template-columns: minmax(92px, 0.7fr) minmax(0, 1.3fr) auto;
+      align-items: start;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .execution-step:last-child {
+      border-bottom: 0;
+    }
+
+    .execution-step-name {
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .execution-step-detail {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .execution-step-status {
+      color: var(--muted);
+      font: 8px/1.4 var(--font-mono);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .execution-step-status.completed {
+      color: var(--positive);
+    }
+
+    .execution-step-status.blocked,
+    .execution-step-status.failed {
+      color: var(--danger);
+    }
+
+    .structured-result {
+      display: grid;
+      gap: 7px;
+    }
+
+    .structured-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
     .preview {
       display: grid;
       min-height: 220px;
@@ -1546,7 +1663,8 @@
       }
 
       .result-summary .result-title,
-      .result-summary details {
+      .result-summary details,
+      .execution-panel {
         grid-column: 1 / -1;
       }
     }
@@ -1578,8 +1696,18 @@
       }
 
       .result-summary .result-title,
-      .result-summary details {
+      .result-summary details,
+      .execution-panel {
         grid-column: auto;
+      }
+
+      .execution-step {
+        grid-template-columns: minmax(88px, 0.7fr) minmax(0, 1.3fr);
+      }
+
+      .execution-step-status {
+        grid-column: 1 / -1;
+        text-align: left;
       }
     }
 
@@ -1760,17 +1888,17 @@
       <div class="brand-mark" aria-hidden="true">C</div>
       <div>
         <p class="brand-name">CHA CUP 营销图片工作台</p>
-        <p class="brand-subtitle">业务规则审计与确定性图层组装</p>
+        <p class="brand-subtitle">营销素材合规审查与生成</p>
       </div>
     </div>
-    <div class="connection" id="connection-status">正在检查执行服务</div>
+    <div class="connection" id="connection-status">正在连接</div>
   </header>
 
   <main class="shell">
     <section class="intro" aria-labelledby="page-title">
       <div>
-        <h1 id="page-title">先审计，再出图</h1>
-        <p>规则技能负责判断任务能否进入生产，图层组装脚本只处理通过任务。前端不保存规则，也不模拟合规结果。</p>
+        <h1 id="page-title">先审查，再出图</h1>
+        <p>填写营销任务，系统会检查价格、日期、画布比例和文案风险。</p>
       </div>
       <div class="flow" aria-label="处理流程">
         <div class="flow-item">
@@ -1778,12 +1906,12 @@
           <span>价格、日期、比例与营销文案</span>
         </div>
         <div class="flow-item">
-          <strong>规则审计</strong>
-          <span>返回结构化状态和违规原因</span>
+          <strong>合规审查</strong>
+          <span>识别价格、日期与文案风险</span>
         </div>
         <div class="flow-item">
           <strong>确定性组装</strong>
-          <span>仅通过任务生成图片文件</span>
+          <span>生成并下载营销图片</span>
         </div>
       </div>
     </section>
@@ -1794,11 +1922,11 @@
         <div class="metric-value" id="metric-total">0</div>
       </div>
       <div class="metric">
-        <div class="metric-label">校验通过</div>
+        <div class="metric-label">审查通过</div>
         <div class="metric-value" id="metric-passed">0</div>
       </div>
       <div class="metric">
-        <div class="metric-label">规则阻断</div>
+        <div class="metric-label">待修改</div>
         <div class="metric-value" id="metric-blocked">0</div>
       </div>
       <div class="metric">
@@ -1809,7 +1937,7 @@
 
     <section class="demo-bar" aria-labelledby="demo-heading">
       <div class="demo-heading">
-        <h2 id="demo-heading">快速体验真实审查案例</h2>
+        <h2 id="demo-heading">快速体验审查案例</h2>
         <p id="demo-note">选择一个业务场景，输入、规则结论和图片产物会同步切换。</p>
       </div>
       <div class="demo-case-list" id="demo-case-list">
@@ -1819,15 +1947,15 @@
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-008" aria-pressed="false">
           <span class="demo-case-name">价格低于底线</span>
-          <span class="demo-case-result blocked">阻断</span>
+          <span class="demo-case-result blocked">需修改</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-009" aria-pressed="false">
           <span class="demo-case-name">广告违禁词</span>
-          <span class="demo-case-result blocked">阻断</span>
+          <span class="demo-case-result blocked">需修改</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-005" aria-pressed="false">
           <span class="demo-case-name">修改产品外观</span>
-          <span class="demo-case-result blocked">阻断</span>
+          <span class="demo-case-result blocked">需修改</span>
         </button>
       </div>
     </section>
@@ -1839,14 +1967,14 @@
           <button class="secondary" id="refresh-button" type="button">刷新</button>
         </div>
         <div class="task-list" id="task-list">
-          <div class="empty">正在读取真实流水线结果</div>
+          <div class="empty">正在读取任务记录</div>
         </div>
       </aside>
 
       <section class="pane">
         <div class="pane-heading">
           <h2 id="input-pane-title">输入任务</h2>
-          <span class="pane-note" id="input-pane-note">字段会提交给本地规则接口</span>
+          <span class="pane-note" id="input-pane-note">填写商品信息和营销要求</span>
         </div>
         <form id="task-form">
           <div class="form-grid">
@@ -1900,10 +2028,10 @@
             </div>
           </div>
           <div class="form-actions">
-            <button class="primary" id="run-button" type="submit" disabled>执行真实校验</button>
+            <button class="primary" id="run-button" type="submit" disabled>开始审查</button>
             <button class="secondary" id="new-button" type="button">新建任务</button>
           </div>
-          <p class="runtime-hint" id="runtime-hint">正在检查本地执行服务。</p>
+          <p class="runtime-hint" id="runtime-hint">正在准备审查功能。</p>
         </form>
       </section>
 
@@ -1913,7 +2041,7 @@
           <span class="pane-note" id="result-time">尚未选择任务</span>
         </div>
         <div id="result-content">
-          <div class="empty">选择一条记录查看审计结果和图片产物。</div>
+          <div class="empty">选择一条记录查看审查结果和营销图片。</div>
         </div>
       </section>
     </section>
@@ -1969,17 +2097,27 @@
     }
 
     function statusLabel(status) {
-      return status === "PASSED" ? "通过" : "阻断";
+      return {
+        PASSED: "通过",
+        BLOCKED: "需修改",
+        REVIEW_REQUIRED: "待复核",
+        FAILED: "失败"
+      }[status] || "未知";
     }
 
     function statusClass(status) {
-      return status === "PASSED" ? "passed" : "blocked";
+      return {
+        PASSED: "passed",
+        BLOCKED: "blocked",
+        REVIEW_REQUIRED: "review-required",
+        FAILED: "failed"
+      }[status] || "failed";
     }
 
     function updateMetrics() {
       const total = state.records.length;
       const passed = state.records.filter((record) => record.status === "PASSED").length;
-      const blocked = total - passed;
+      const blocked = state.records.filter((record) => record.status === "BLOCKED").length;
       const images = state.records.filter((record) => Boolean(record.generated_image)).length;
       setText("metric-total", total);
       setText("metric-passed", passed);
@@ -2041,20 +2179,20 @@
       });
       formActions.classList.toggle("hidden", !apiOnline);
       if (apiOnline) {
-        connectionStatus.textContent = "本地真实执行服务已连接";
+        connectionStatus.textContent = "可以开始审查";
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "输入任务";
-        inputPaneNote.textContent = "字段会提交给本地规则接口";
-        demoNote.textContent = "选择预置案例快速了解规则，也可以填写新任务执行真实校验。";
-        runtimeHint.textContent = "当前为真实执行模式。提交任务后将调用同一套规则脚本与图层组装器。";
+        inputPaneNote.textContent = "填写商品信息和营销要求";
+        demoNote.textContent = "选择预置案例快速了解审查结果，也可以填写新任务。";
+        runtimeHint.textContent = "填写完成后，点击“开始审查”查看结果。";
         runButton.disabled = false;
       } else {
         connectionStatus.textContent = "在线案例演示";
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "案例输入快照";
-        inputPaneNote.textContent = "由真实流水线预生成，不在浏览器中模拟规则";
-        demoNote.textContent = "选择一个场景，查看 Skill 规则与 Python 流水线预生成的真实结果。";
-        runtimeHint.textContent = "当前为可交互案例演示。启动本地服务后可填写新任务并执行真实校验。";
+        inputPaneNote.textContent = "查看预置案例的输入信息";
+        demoNote.textContent = "选择一个场景，查看输入信息、审查结论和生成结果。";
+        runtimeHint.textContent = "当前可浏览预置案例。选择不同场景查看审查结果。";
         runButton.disabled = true;
       }
     }
@@ -2077,13 +2215,91 @@
     }
 
     function appendRawResult(record) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "structured-result";
       const details = document.createElement("details");
       const summary = document.createElement("summary");
-      summary.textContent = "查看结构化结果";
+      summary.textContent = "查看详细数据";
       const pre = document.createElement("pre");
       pre.textContent = JSON.stringify(record, null, 2);
       details.append(summary, pre);
-      return details;
+      const actions = document.createElement("div");
+      actions.className = "structured-actions";
+      const copy = document.createElement("button");
+      copy.type = "button";
+      copy.className = "secondary";
+      copy.textContent = "复制 JSON";
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(pre.textContent);
+          showToast("详细数据已复制。");
+        } catch {
+          showToast("复制失败，请展开结果后手动复制。", true);
+        }
+      });
+      actions.appendChild(copy);
+      wrapper.append(details, actions);
+      return wrapper;
+    }
+
+    function buildExecutionTrace(record) {
+      const panel = document.createElement("details");
+      panel.className = "execution-panel";
+      const summary = document.createElement("summary");
+      summary.className = "execution-summary";
+      const label = document.createElement("span");
+      label.className = "execution-summary-label";
+      label.textContent = "查看处理记录";
+      const meta = document.createElement("span");
+      meta.className = "execution-meta";
+      const duration = Number(record.duration_ms);
+      meta.textContent = Number.isFinite(duration)
+        ? `${duration.toFixed(2)} ms`
+        : "旧版结果";
+      summary.append(label, meta);
+      panel.appendChild(summary);
+
+      const trace = Array.isArray(record.execution_trace)
+        ? record.execution_trace
+        : [];
+      if (!trace.length) {
+        const empty = document.createElement("div");
+        empty.className = "preview-empty";
+        empty.textContent = "该记录暂无详细处理信息。";
+        panel.appendChild(empty);
+        return panel;
+      }
+
+      const list = document.createElement("ol");
+      list.className = "execution-trace";
+      trace.forEach((step) => {
+        const item = document.createElement("li");
+        item.className = "execution-step";
+        const name = document.createElement("span");
+        name.className = "execution-step-name";
+        name.textContent = step.label || step.name || "未命名步骤";
+        const detail = document.createElement("span");
+        detail.className = "execution-step-detail";
+        detail.textContent = step.detail || "无补充说明";
+        const stepStatus = document.createElement("span");
+        stepStatus.className =
+          `execution-step-status ${String(step.status || "").toLowerCase()}`;
+        const stepDuration = Number(step.duration_ms);
+        const stepStatusLabel = {
+          COMPLETED: "已完成",
+          BLOCKED: "需修改",
+          NOT_CONFIGURED: "尚未启用",
+          SKIPPED: "已跳过",
+          FAILED: "失败"
+        }[step.status] || "未知";
+        stepStatus.textContent = Number.isFinite(stepDuration)
+          ? `${stepStatusLabel} / ${stepDuration.toFixed(2)} ms`
+          : stepStatusLabel;
+        item.append(name, detail, stepStatus);
+        list.appendChild(item);
+      });
+      panel.appendChild(list);
+      return panel;
     }
 
     function renderResult(record, cacheBust = false) {
@@ -2091,7 +2307,7 @@
       if (!record) {
         const empty = document.createElement("div");
         empty.className = "empty";
-        empty.textContent = "选择一条记录查看审计结果和图片产物。";
+        empty.textContent = "选择一条记录查看审查结果和营销图片。";
         resultContent.appendChild(empty);
         return;
       }
@@ -2101,20 +2317,16 @@
       const title = document.createElement("div");
       title.className = "result-title";
       const heading = document.createElement("h3");
-      heading.textContent = `${record.task_id} 审计结果`;
+      heading.textContent = `${record.task_id} 审查结果`;
       title.append(heading, createStatus(record.status));
-
-      const version = document.createElement("div");
-      version.className = "rule-version";
-      version.textContent = `规则版本：${record.rules_version || state.rulesVersion}`;
-      summary.append(title, version);
+      summary.appendChild(title);
 
       if (record.status === "PASSED") {
         const clear = document.createElement("p");
         clear.className = "clear-result";
-        clear.textContent = "全部业务规则校验通过，允许进入图片组装。";
+        clear.textContent = "审查通过，营销图片已生成。";
         summary.appendChild(clear);
-      } else {
+      } else if (record.status === "BLOCKED") {
         const list = document.createElement("ul");
         list.className = "violations";
         const violations = Array.isArray(record.violations) ? record.violations : [];
@@ -2131,6 +2343,17 @@
           list.appendChild(item);
         });
         summary.appendChild(list);
+      } else if (record.status === "REVIEW_REQUIRED") {
+        const review = document.createElement("p");
+        review.className = "review-result";
+        review.textContent = "自动审查无法得出稳定结论，任务已停止出图并等待人工复核。";
+        summary.appendChild(review);
+      } else {
+        const failed = document.createElement("p");
+        failed.className = "failed-result";
+        failed.textContent =
+          record.error?.message || "任务执行失败，未生成图片。";
+        summary.appendChild(failed);
       }
 
       const preview = document.createElement("div");
@@ -2147,23 +2370,25 @@
         generatedImageUrl =
           `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
         image.src = generatedImageUrl;
-        image.alt = `${record.task_id} 通过规则审计后生成的营销图片`;
+        image.alt = `${record.task_id} 生成的营销图片`;
         image.addEventListener("error", () => {
           preview.replaceChildren();
           const failed = document.createElement("div");
           failed.className = "preview-empty";
-          failed.textContent = "图片记录存在，但文件加载失败。请重新运行流水线。";
+          failed.textContent = "图片加载失败，请稍后重试。";
           preview.appendChild(failed);
         });
         preview.appendChild(image);
       } else {
         const empty = document.createElement("div");
         empty.className = "preview-empty";
-        empty.textContent = "任务已被规则阻断。本任务不会生成图片，也不会复用历史图片。";
+        empty.textContent = record.status === "BLOCKED"
+          ? "请根据上方原因修改任务后重新审查。"
+          : "当前暂时无法生成图片，请查看审查结果。";
         preview.appendChild(empty);
       }
 
-      resultContent.append(summary, preview);
+      resultContent.append(summary, buildExecutionTrace(record), preview);
       if (record.status === "PASSED" && record.generated_image) {
         const download = document.createElement("a");
         download.className = "download";
@@ -2243,7 +2468,7 @@
       taskList.replaceChildren();
       const loading = document.createElement("div");
       loading.className = "empty";
-      loading.textContent = "正在读取真实流水线结果。";
+      loading.textContent = "正在读取任务记录。";
       taskList.appendChild(loading);
 
       try {
@@ -2272,7 +2497,7 @@
         taskList.replaceChildren();
         const empty = document.createElement("div");
         empty.className = "empty";
-        empty.textContent = `无法读取流水线结果。${error.message}`;
+        empty.textContent = `无法读取任务记录。${error.message}`;
         taskList.appendChild(empty);
         renderResult(null);
         syncDemoCases(null);
@@ -2282,13 +2507,13 @@
     async function runTask(event) {
       event.preventDefault();
       if (!state.apiOnline) {
-        showToast("请先启动本地真实执行服务。", true);
+        showToast("当前仅支持浏览预置案例。", true);
         return;
       }
       if (!event.currentTarget.reportValidity()) return;
 
       runButton.disabled = true;
-      runButton.textContent = "正在审计和组装";
+      runButton.textContent = "正在审查";
       try {
         const payload = collectForm();
         const result = await fetchJson("/api/run", {
@@ -2309,12 +2534,17 @@
         renderTaskList();
         setForm(record);
         renderResult(record, true);
-        showToast(record.status === "PASSED" ? "审计通过，图片已生成。" : "任务已阻断，未生成图片。");
+        showToast({
+          PASSED: "审查通过，图片已生成。",
+          BLOCKED: "发现需要修改的内容，请查看审查结果。",
+          REVIEW_REQUIRED: "任务需要人工复核，未生成图片。",
+          FAILED: "任务执行失败，未生成图片。"
+        }[record.status] || "任务执行完成。", record.status === "FAILED");
       } catch (error) {
-        showToast(error.message || "执行失败，请检查本地服务。", true);
+        showToast(error.message || "执行失败，请稍后重试。", true);
       } finally {
         runButton.disabled = !state.apiOnline;
-        runButton.textContent = "执行真实校验";
+        runButton.textContent = "开始审查";
       }
     }
 

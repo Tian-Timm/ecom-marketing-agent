@@ -18,7 +18,7 @@ REPORT_PATH = OUTPUT_DIR / "pipeline_result.json"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from audit_text import load_rules
-from run_pipeline import build_report, run_records, write_report
+from run_pipeline import build_report, execute_task, write_report
 
 MAX_BODY_BYTES = 64 * 1024
 
@@ -63,8 +63,13 @@ class AppHandler(SimpleHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
             if not isinstance(payload, dict):
                 raise ValueError("请求内容必须是一个任务对象")
-            report = run_records([payload], OUTPUT_DIR, source="local-api")
-            record = report["records"][0]
+            rules = load_rules()
+            record = execute_task(
+                payload,
+                OUTPUT_DIR,
+                rules=rules,
+                source="local-api",
+            )
             existing_records = []
             if REPORT_PATH.exists():
                 existing_report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
@@ -85,11 +90,12 @@ class AppHandler(SimpleHTTPRequestHandler):
             persisted = build_report(
                 existing_records,
                 source="local-api",
-                rules=load_rules(),
+                rules=rules,
             )
             write_report(persisted, OUTPUT_DIR)
             self.send_json({
-                "rules_version": report["rules_version"],
+                "rules_version": record["rules_version"],
+                "pipeline_version": record["pipeline_version"],
                 "record": record,
             })
         except (ValueError, json.JSONDecodeError) as exc:

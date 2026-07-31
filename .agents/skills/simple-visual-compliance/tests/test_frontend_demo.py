@@ -67,7 +67,7 @@ class FrontendDemoContractTests(unittest.TestCase):
 
     def test_static_demo_is_truthful_and_local_execution_remains_available(self) -> None:
         self.assertIn("在线案例演示", self.html)
-        self.assertIn("由真实流水线预生成，不在浏览器中模拟规则", self.html)
+        self.assertIn("查看预置案例的输入信息", self.html)
         self.assertIn('fetchJson("/api/run"', self.html)
         self.assertIn("configureRuntimeUI(apiOnline)", self.html)
         self.assertNotIn("const forbiddenWords", self.html)
@@ -76,6 +76,23 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn("state.report?.generated_at || state.rulesVersion", self.html)
         self.assertIn("?v=${encodeURIComponent(assetVersion)}", self.html)
         self.assertIn("download.href = generatedImageUrl", self.html)
+
+    def test_demo_exposes_pipeline_evidence_without_claiming_unwired_steps(self) -> None:
+        self.assertEqual(self.report["schema_version"], "2.0")
+        self.assertTrue(self.report["pipeline_version"])
+        for record in self.report["records"]:
+            self.assertTrue(record["input_hash"])
+            self.assertGreaterEqual(record["duration_ms"], 0)
+            steps = {
+                step["name"]: step
+                for step in record["execution_trace"]
+            }
+            self.assertEqual(steps["semantic_review"]["status"], "NOT_CONFIGURED")
+            self.assertEqual(steps["delivery"]["status"], "NOT_CONFIGURED")
+        self.assertIn("查看处理记录", self.html)
+        self.assertIn("复制 JSON", self.html)
+        self.assertIn("REVIEW_REQUIRED", self.html)
+        self.assertIn("FAILED", self.html)
 
     def test_required_demo_ids_are_unique(self) -> None:
         required = {
