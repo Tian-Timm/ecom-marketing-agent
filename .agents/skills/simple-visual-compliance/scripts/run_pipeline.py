@@ -24,9 +24,11 @@ sys.path.insert(0, str(AUDIT_SCRIPT.parent))
 from standardize import process_file, sanitize_record
 from audit_text import audit_batch, load_rules
 from assemble_image import assemble_batch, safe_task_id
+from semantic_review import DeepSeekSemanticReviewer
 
 SCHEMA_VERSION = "2.0"
-PIPELINE_VERSION = "2026-07-31.1"
+PIPELINE_VERSION = "2026-07-31.2"
+_AUTO_SEMANTIC_REVIEWER = object()
 
 
 def _utc_now() -> str:
@@ -41,6 +43,11 @@ def _input_hash(record: Dict[str, Any]) -> str:
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()[:16]
+
+
+def fingerprint_task(raw_record: Dict[str, Any], index: int = 0) -> str:
+    """返回与统一任务入口完全一致的规范化输入指纹。"""
+    return _input_hash(sanitize_record(raw_record, index))
 
 
 def _trace_step(
@@ -74,6 +81,7 @@ def execute_task(
     index: int = 0,
     rules: Dict[str, Any] | None = None,
     source: str = "runtime",
+    semantic_reviewer: Any = _AUTO_SEMANTIC_REVIEWER,
 ) -> Dict[str, Any]:
     """统一执行一个任务，并返回可供命令行、网页和飞书复用的结果。"""
     task_started_at = _utc_now()
@@ -116,13 +124,41 @@ def execute_task(
 
         step_started_at = _utc_now()
         step_counter = perf_counter()
+        if semantic_reviewer is _AUTO_SEMANTIC_REVIEWER:
+            semantic_reviewer = DeepSeekSemanticReviewer.from_env()
+        if record["status"] != "PASSED":
+            semantic_status = "SKIPPED"
+            semantic_detail = "确定性规则未通过，无需继续语义复核。"
+        elif semantic_reviewer is None:
+            semantic_status = "NOT_CONFIGURED"
+            semantic_detail = "语义复核暂未启用。"
+        else:
+            semantic_result = semantic_reviewer.review(dict(record))
+            record["semantic_review"] = semantic_result
+            semantic_status = semantic_result["status"]
+            semantic_detail = (
+                semantic_result.get("summary")
+                or "语义复核已完成。"
+            )
+            if semantic_result["status"] == "BLOCKED":
+                record["violations"].extend(semantic_result["violations"])
+                record["status"] = "BLOCKED"
+                record["blocked_reason"] = "；".join(
+                    item["message"] for item in record["violations"]
+                )
+            elif semantic_result["status"] == "REVIEW_REQUIRED":
+                record["violations"].extend(semantic_result["violations"])
+                record["status"] = "REVIEW_REQUIRED"
+                record["blocked_reason"] = "；".join(
+                    item["message"] for item in record["violations"]
+                )
         trace.append(_trace_step(
             "semantic_review",
             "语义复核",
-            "NOT_CONFIGURED",
+            semantic_status,
             step_started_at,
             step_counter,
-            "语义复核暂未启用。",
+            semantic_detail,
         ))
 
         step_started_at = _utc_now()

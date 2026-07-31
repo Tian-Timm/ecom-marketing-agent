@@ -841,6 +841,58 @@
       background: var(--positive-soft);
     }
 
+    .source-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(120px, 0.55fr));
+      margin-bottom: 10px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .source-cell {
+      min-width: 0;
+      padding: 8px 12px;
+      border-right: 1px solid var(--line);
+    }
+
+    .source-cell:last-child {
+      border-right: 0;
+    }
+
+    .source-label,
+    .source-value {
+      display: block;
+    }
+
+    .source-label {
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 650;
+    }
+
+    .source-value {
+      margin-top: 2px;
+      overflow: hidden;
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .source-value a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .source-value a:hover {
+      text-decoration: underline;
+    }
+
     .shell {
       width: 100%;
       max-width: 1920px;
@@ -1102,6 +1154,12 @@
       letter-spacing: -0.01em;
     }
 
+    .pane-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .pane-note {
       overflow: hidden;
       color: var(--muted);
@@ -1219,6 +1277,12 @@
       border-color: #c7c7ce;
       color: #52525b;
       background: #f1f1f3;
+    }
+
+    .status.pending {
+      border-color: #d4c6a1;
+      color: var(--warning);
+      background: #faf6ea;
     }
 
     .form-grid {
@@ -1521,6 +1585,68 @@
       justify-content: flex-end;
     }
 
+    .semantic-evidence {
+      display: grid;
+      gap: 7px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: #ffffff;
+    }
+
+    .semantic-evidence strong {
+      color: var(--ink);
+      font-size: 10px;
+    }
+
+    .semantic-evidence p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    dialog {
+      width: min(380px, calc(100vw - 32px));
+      padding: 0;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-panel);
+      color: var(--ink);
+      background: var(--surface);
+      box-shadow: 0 18px 60px rgba(24, 24, 27, 0.18);
+    }
+
+    dialog::backdrop {
+      background: rgba(24, 24, 27, 0.34);
+    }
+
+    .admin-form {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .admin-form h2,
+    .admin-form p {
+      margin: 0;
+    }
+
+    .admin-form h2 {
+      font-size: 14px;
+    }
+
+    .admin-form p {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .admin-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
     .preview {
       display: grid;
       min-height: 220px;
@@ -1683,6 +1809,18 @@
         grid-template-columns: 210px minmax(0, 1fr);
       }
 
+      .source-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .source-cell:nth-child(2) {
+        border-right: 0;
+      }
+
+      .source-cell:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--line);
+      }
+
       .form-grid {
         grid-template-columns: 1fr;
       }
@@ -1769,6 +1907,10 @@
 
       .metrics {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-bottom: 8px;
+      }
+
+      .source-strip {
         margin-bottom: 8px;
       }
 
@@ -1935,6 +2077,25 @@
       </div>
     </section>
 
+    <section class="source-strip" aria-label="数据源状态">
+      <div class="source-cell">
+        <span class="source-label">数据来源</span>
+        <span class="source-value"><a id="base-link" href="https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN" target="_blank" rel="noreferrer">飞书多维表格</a></span>
+      </div>
+      <div class="source-cell">
+        <span class="source-label">同步方式</span>
+        <span class="source-value" id="source-mode">正在检测</span>
+      </div>
+      <div class="source-cell">
+        <span class="source-label">语义复核</span>
+        <span class="source-value" id="semantic-mode">正在检测</span>
+      </div>
+      <div class="source-cell">
+        <span class="source-label">数据更新时间</span>
+        <span class="source-value" id="last-sync">正在读取</span>
+      </div>
+    </section>
+
     <section class="demo-bar" aria-labelledby="demo-heading">
       <div class="demo-heading">
         <h2 id="demo-heading">快速体验审查案例</h2>
@@ -1964,7 +2125,10 @@
       <aside class="pane">
         <div class="pane-heading">
           <h2>任务记录</h2>
-          <button class="secondary" id="refresh-button" type="button">刷新</button>
+          <div class="pane-actions">
+            <button class="secondary hidden" id="sync-button" type="button">处理待审查</button>
+            <button class="secondary" id="refresh-button" type="button">刷新</button>
+          </div>
         </div>
         <div class="task-list" id="task-list">
           <div class="empty">正在读取任务记录</div>
@@ -2028,7 +2192,7 @@
             </div>
           </div>
           <div class="form-actions">
-            <button class="primary" id="run-button" type="submit" disabled>开始审查</button>
+            <button class="primary" id="run-button" type="submit" disabled>执行所选任务</button>
             <button class="secondary" id="new-button" type="button">新建任务</button>
           </div>
           <p class="runtime-hint" id="runtime-hint">正在准备审查功能。</p>
@@ -2048,6 +2212,20 @@
   </main>
 
   <div class="toast hidden" id="toast" role="status"></div>
+  <dialog id="admin-dialog" aria-labelledby="admin-title">
+    <form class="admin-form" id="admin-form">
+      <h2 id="admin-title">输入执行口令</h2>
+      <p>实时审查会调用 DeepSeek，并可能上传图片和回写飞书。口令仅保留在当前页面内存中。</p>
+      <div class="field">
+        <label for="admin-token">管理员执行口令</label>
+        <input id="admin-token" type="password" autocomplete="off" required>
+      </div>
+      <div class="admin-actions">
+        <button class="secondary" id="admin-cancel" type="button">取消</button>
+        <button class="primary" type="submit">确认执行</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
     const state = {
@@ -2055,6 +2233,9 @@
       selectedId: null,
       apiOnline: false,
       demoMode: false,
+      runtime: null,
+      adminToken: "",
+      pendingAction: "",
       rulesVersion: "未知",
       report: null
     };
@@ -2083,6 +2264,10 @@
     const demoNote = document.getElementById("demo-note");
     const demoCases = Array.from(document.querySelectorAll("[data-demo-task]"));
     const toast = document.getElementById("toast");
+    const adminDialog = document.getElementById("admin-dialog");
+    const adminTokenInput = document.getElementById("admin-token");
+    const newButton = document.getElementById("new-button");
+    const syncButton = document.getElementById("sync-button");
 
     function setText(id, value) {
       document.getElementById(id).textContent = String(value ?? "");
@@ -2101,7 +2286,8 @@
         PASSED: "通过",
         BLOCKED: "需修改",
         REVIEW_REQUIRED: "待复核",
-        FAILED: "失败"
+        FAILED: "失败",
+        PENDING: "待处理"
       }[status] || "未知";
     }
 
@@ -2110,7 +2296,8 @@
         PASSED: "passed",
         BLOCKED: "blocked",
         REVIEW_REQUIRED: "review-required",
-        FAILED: "failed"
+        FAILED: "failed",
+        PENDING: "pending"
       }[status] || "failed";
     }
 
@@ -2171,21 +2358,42 @@
       });
     }
 
-    function configureRuntimeUI(apiOnline) {
+    function configureRuntimeUI(runtime) {
+      const apiOnline = Boolean(runtime?.online);
+      const canExecute = Boolean(
+        runtime?.capabilities?.feishu_write &&
+        runtime?.capabilities?.semantic_review
+      );
       state.apiOnline = apiOnline;
       state.demoMode = !apiOnline;
+      state.runtime = runtime || null;
       Object.values(fields).forEach((field) => {
-        field.disabled = !apiOnline;
+        field.disabled = true;
       });
-      formActions.classList.toggle("hidden", !apiOnline);
+      formActions.classList.remove("hidden");
+      newButton.classList.add("hidden");
+      runButton.disabled = !canExecute;
+      syncButton.classList.toggle("hidden", !canExecute);
+      syncButton.disabled = !canExecute;
+      setText("source-mode", apiOnline ? "实时读取" : "线上快照");
+      setText(
+        "semantic-mode",
+        runtime?.capabilities?.semantic_review ? "DeepSeek 已启用" : "暂未启用"
+      );
+      const source = runtime?.source;
+      if (source?.url) {
+        document.getElementById("base-link").href = source.url;
+        document.getElementById("base-link").textContent = source.name || "飞书多维表格";
+      }
       if (apiOnline) {
-        connectionStatus.textContent = "可以开始审查";
+        connectionStatus.textContent = "飞书已连接";
         connectionStatus.classList.add("live");
-        inputPaneTitle.textContent = "输入任务";
-        inputPaneNote.textContent = "填写商品信息和营销要求";
-        demoNote.textContent = "选择预置案例快速了解审查结果，也可以填写新任务。";
-        runtimeHint.textContent = "填写完成后，点击“开始审查”查看结果。";
-        runButton.disabled = false;
+        inputPaneTitle.textContent = "飞书任务输入";
+        inputPaneNote.textContent = "字段来自当前 Base 记录";
+        demoNote.textContent = "选择预置案例，或从左侧查看实时飞书任务。";
+        runtimeHint.textContent = canExecute
+          ? "选择任务后可使用管理员口令执行实时审查。"
+          : "当前开放实时读取，执行功能等待服务端配置完成。";
       } else {
         connectionStatus.textContent = "在线案例演示";
         connectionStatus.classList.add("live");
@@ -2290,7 +2498,9 @@
           BLOCKED: "需修改",
           NOT_CONFIGURED: "尚未启用",
           SKIPPED: "已跳过",
-          FAILED: "失败"
+          FAILED: "失败",
+          PASSED: "已通过",
+          REVIEW_REQUIRED: "待复核"
         }[step.status] || "未知";
         stepStatus.textContent = Number.isFinite(stepDuration)
           ? `${stepStatusLabel} / ${stepDuration.toFixed(2)} ms`
@@ -2348,6 +2558,11 @@
         review.className = "review-result";
         review.textContent = "自动审查无法得出稳定结论，任务已停止出图并等待人工复核。";
         summary.appendChild(review);
+      } else if (record.status === "PENDING") {
+        const pending = document.createElement("p");
+        pending.className = "review-result";
+        pending.textContent = "任务等待审查，尚未生成营销图片。";
+        summary.appendChild(pending);
       } else {
         const failed = document.createElement("p");
         failed.className = "failed-result";
@@ -2367,8 +2582,9 @@
         const suffix = assetVersion
           ? `?v=${encodeURIComponent(assetVersion)}`
           : "";
-        generatedImageUrl =
-          `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
+        generatedImageUrl = record.generated_image_url
+          ? `${record.generated_image_url}${record.generated_image_url.includes("?") ? "&" : "?"}v=${encodeURIComponent(assetVersion || "")}`
+          : `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
         image.src = generatedImageUrl;
         image.alt = `${record.task_id} 生成的营销图片`;
         image.addEventListener("error", () => {
@@ -2384,11 +2600,31 @@
         empty.className = "preview-empty";
         empty.textContent = record.status === "BLOCKED"
           ? "请根据上方原因修改任务后重新审查。"
-          : "当前暂时无法生成图片，请查看审查结果。";
+          : record.status === "PENDING"
+            ? "执行审查后将在此展示营销图片。"
+            : "当前暂时无法生成图片，请查看审查结果。";
         preview.appendChild(empty);
       }
 
-      resultContent.append(summary, buildExecutionTrace(record), preview);
+      resultContent.append(summary);
+      if (record.semantic_review) {
+        const semantic = document.createElement("div");
+        semantic.className = "semantic-evidence";
+        const semanticTitle = document.createElement("strong");
+        semanticTitle.textContent = "DeepSeek 语义复核";
+        const semanticSummary = document.createElement("p");
+        semanticSummary.textContent =
+          record.semantic_review.summary || "语义复核已完成。";
+        const semanticMeta = document.createElement("p");
+        const confidence = Number(record.semantic_review.confidence);
+        semanticMeta.textContent = [
+          record.semantic_review.model || "DeepSeek",
+          Number.isFinite(confidence) ? `置信度 ${(confidence * 100).toFixed(0)}%` : ""
+        ].filter(Boolean).join(" / ");
+        semantic.append(semanticTitle, semanticSummary, semanticMeta);
+        resultContent.appendChild(semantic);
+      }
+      resultContent.append(buildExecutionTrace(record), preview);
       if (record.status === "PASSED" && record.generated_image) {
         const download = document.createElement("a");
         download.className = "download";
@@ -2448,7 +2684,16 @@
         ...options
       });
       if (!response.ok) {
-        throw new Error(`请求失败：${response.status}`);
+        let message = `请求失败：${response.status}`;
+        try {
+          const payload = await response.json();
+          message = payload.error || message;
+        } catch {
+          // 非 JSON 错误沿用 HTTP 状态。
+        }
+        const error = new Error(message);
+        error.status = response.status;
+        throw error;
       }
       return response.json();
     }
@@ -2456,11 +2701,10 @@
     async function detectRuntime() {
       try {
         const status = await fetchJson("/api/status");
-        const apiOnline = Boolean(status.online);
         state.rulesVersion = status.rules_version || "未知";
-        configureRuntimeUI(apiOnline);
+        configureRuntimeUI(status);
       } catch {
-        configureRuntimeUI(false);
+        configureRuntimeUI({online: false, capabilities: {}});
       }
     }
 
@@ -2477,8 +2721,17 @@
           : await fetchJson("generated_output/pipeline_result.json");
         const report = normalizeReport(payload);
         state.report = report;
+        if (report.runtime) {
+          configureRuntimeUI(report.runtime);
+        }
         state.rulesVersion = report.rules_version || state.rulesVersion;
         state.records = Array.isArray(report.records) ? report.records : [];
+        setText(
+          "last-sync",
+          report.generated_at
+            ? new Date(report.generated_at).toLocaleString("zh-CN", {hour12: false})
+            : "未知"
+        );
         updateMetrics();
         renderTaskList();
         if (state.records.length) {
@@ -2504,22 +2757,32 @@
       }
     }
 
-    async function runTask(event) {
-      event.preventDefault();
+    async function executeSelectedTask() {
       if (!state.apiOnline) {
         showToast("当前仅支持浏览预置案例。", true);
         return;
       }
-      if (!event.currentTarget.reportValidity()) return;
+      if (!state.selectedId) {
+        showToast("请先选择一条飞书任务。", true);
+        return;
+      }
+      if (!state.adminToken) {
+        state.pendingAction = "run";
+        adminDialog.showModal();
+        adminTokenInput.focus();
+        return;
+      }
 
       runButton.disabled = true;
       runButton.textContent = "正在审查";
       try {
-        const payload = collectForm();
         const result = await fetchJson("/api/run", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify(payload)
+          headers: {
+            "Content-Type": "application/json",
+            "X-Demo-Admin-Token": state.adminToken
+          },
+          body: JSON.stringify({task_id: state.selectedId})
         });
         const record = result.record;
         state.rulesVersion = result.rules_version || state.rulesVersion;
@@ -2541,16 +2804,87 @@
           FAILED: "任务执行失败，未生成图片。"
         }[record.status] || "任务执行完成。", record.status === "FAILED");
       } catch (error) {
+        if (error.status === 401) {
+          state.adminToken = "";
+        }
         showToast(error.message || "执行失败，请稍后重试。", true);
       } finally {
-        runButton.disabled = !state.apiOnline;
-        runButton.textContent = "开始审查";
+        const canExecute = Boolean(
+          state.runtime?.capabilities?.feishu_write &&
+          state.runtime?.capabilities?.semantic_review
+        );
+        runButton.disabled = !canExecute;
+        runButton.textContent = "执行所选任务";
       }
+    }
+
+    async function syncPendingTasks() {
+      if (!state.apiOnline) {
+        showToast("当前仅支持浏览预置案例。", true);
+        return;
+      }
+      if (!state.adminToken) {
+        state.pendingAction = "sync";
+        adminDialog.showModal();
+        adminTokenInput.focus();
+        return;
+      }
+
+      syncButton.disabled = true;
+      syncButton.textContent = "正在处理";
+      try {
+        const result = await fetchJson("/api/sync", {
+          method: "POST",
+          headers: {
+            "X-Demo-Admin-Token": state.adminToken
+          }
+        });
+        const count = Number(result.batch?.processed || 0);
+        await loadRecords();
+        showToast(count
+          ? `已处理 ${count} 条待审查任务。`
+          : "当前没有待审查任务。");
+      } catch (error) {
+        if (error.status === 401) {
+          state.adminToken = "";
+        }
+        showToast(error.message || "同步失败，请稍后重试。", true);
+      } finally {
+        const canExecute = Boolean(
+          state.runtime?.capabilities?.feishu_write &&
+          state.runtime?.capabilities?.semantic_review
+        );
+        syncButton.disabled = !canExecute;
+        syncButton.textContent = "处理待审查";
+      }
+    }
+
+    async function runTask(event) {
+      event.preventDefault();
+      await executeSelectedTask();
     }
 
     document.getElementById("task-form").addEventListener("submit", runTask);
     document.getElementById("new-button").addEventListener("click", newTask);
     document.getElementById("refresh-button").addEventListener("click", loadRecords);
+    syncButton.addEventListener("click", syncPendingTasks);
+    document.getElementById("admin-cancel").addEventListener("click", () => {
+      state.pendingAction = "";
+      adminDialog.close();
+    });
+    document.getElementById("admin-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      state.adminToken = adminTokenInput.value;
+      adminTokenInput.value = "";
+      adminDialog.close();
+      if (state.pendingAction === "run") {
+        state.pendingAction = "";
+        await executeSelectedTask();
+      } else if (state.pendingAction === "sync") {
+        state.pendingAction = "";
+        await syncPendingTasks();
+      }
+    });
     demoCases.forEach((button) => {
       button.addEventListener("click", () => {
         const taskId = button.dataset.demoTask;

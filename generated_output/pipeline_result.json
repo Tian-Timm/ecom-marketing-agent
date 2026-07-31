@@ -1,9 +1,9 @@
 {
   "schema_version": "2.0",
   "pipeline_version": "2026-07-31.1",
-  "generated_at": "2026-07-31T05:15:20+00:00",
+  "generated_at": "2026-07-31T08:00:39+00:00",
   "rules_version": "2026-07-30.1",
-  "source": "marketing_tasks.csv",
+  "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
   "summary": {
     "total": 10,
     "passed": 4,
@@ -15,16 +15,17 @@
   "records": [
     {
       "task_id": "MKT-001",
-      "img_type": "电商主图",
-      "aspect_ratio": "1:1",
-      "deploy_date": "2026-07-25",
-      "campaign_name": "日常商品展示",
-      "promo_price": 129.0,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-08-31",
-      "main_text": "城市轻装 随时出发",
+      "deploy_date": "2026-07-25",
+      "aspect_ratio": "1:1",
       "sub_text": "白底展示产品主体",
+      "main_text": "城市轻装 随时出发",
+      "promo_price": 129.0,
+      "img_type": "电商主图",
+      "campaign_end": "2026-08-31",
+      "campaign_name": "日常商品展示",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "PASSED",
       "blocked_reason": "",
       "violations": [],
@@ -36,33 +37,33 @@
         "height": 800,
         "format": "PNG"
       },
-      "input_hash": "a3c501c33e88765c",
+      "input_hash": "70ef6671a24ca687",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.277+00:00",
-      "duration_ms": 151.77,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.154+00:00",
+      "duration_ms": 125.69,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.278+00:00",
-          "duration_ms": 0.09,
+          "started_at": "2026-07-31T08:00:39.154+00:00",
+          "duration_ms": 0.04,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.278+00:00",
-          "duration_ms": 0.62,
+          "started_at": "2026-07-31T08:00:39.154+00:00",
+          "duration_ms": 0.71,
           "detail": "价格、日期、画布比例和文案检查通过。"
         },
         {
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.278+00:00",
+          "started_at": "2026-07-31T08:00:39.155+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -70,32 +71,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.278+00:00",
-          "duration_ms": 151.0,
+          "started_at": "2026-07-31T08:00:39.155+00:00",
+          "duration_ms": 124.88,
           "detail": "营销图片已生成。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.280+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTPYVH",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": "[MKT-001 营销图片](https://acn4y3muxbcy.feishu.cn/file/OnMVbleTaoTzecxQcB8ceweEnEd)",
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-002",
-      "img_type": "电商主图",
-      "aspect_ratio": "1:1",
-      "deploy_date": "2026-07-27",
-      "campaign_name": "夏日出行周",
-      "promo_price": 99.0,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-07-31",
-      "main_text": "夏日出行 轻装随行",
+      "deploy_date": "2026-07-27",
+      "aspect_ratio": "1:1",
       "sub_text": "突出活动价和500ml容量",
+      "main_text": "夏日出行 轻装随行",
+      "promo_price": 99.0,
+      "img_type": "电商主图",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "夏日出行周",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "PASSED",
       "blocked_reason": "",
       "violations": [],
@@ -107,33 +113,33 @@
         "height": 800,
         "format": "PNG"
       },
-      "input_hash": "b55ab656551d8cce",
+      "input_hash": "7e5d61262e0bf49d",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.429+00:00",
-      "duration_ms": 96.93,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.280+00:00",
+      "duration_ms": 95.74,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.429+00:00",
-          "duration_ms": 0.09,
+          "started_at": "2026-07-31T08:00:39.280+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.429+00:00",
-          "duration_ms": 0.02,
+          "started_at": "2026-07-31T08:00:39.280+00:00",
+          "duration_ms": 0.03,
           "detail": "价格、日期、画布比例和文案检查通过。"
         },
         {
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.429+00:00",
+          "started_at": "2026-07-31T08:00:39.280+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -141,32 +147,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.429+00:00",
-          "duration_ms": 96.78,
+          "started_at": "2026-07-31T08:00:39.280+00:00",
+          "duration_ms": 95.64,
           "detail": "营销图片已生成。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.376+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTrlTP",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": "[MKT-002 营销图片](https://acn4y3muxbcy.feishu.cn/file/A2bAbHUDooCKWSxvGCScw8sXnse)",
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-003",
-      "img_type": "促销海报",
-      "aspect_ratio": "3:4",
-      "deploy_date": "2026-07-28",
-      "campaign_name": "夏日出行周",
-      "promo_price": 99.0,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-07-31",
-      "main_text": "轻量随行 限时优惠",
+      "deploy_date": "2026-07-28",
+      "aspect_ratio": "3:4",
       "sub_text": "保留底部活动说明区域",
+      "main_text": "轻量随行 限时优惠",
+      "promo_price": 99.0,
+      "img_type": "促销海报",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "夏日出行周",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "PASSED",
       "blocked_reason": "",
       "violations": [],
@@ -178,25 +189,25 @@
         "height": 800,
         "format": "PNG"
       },
-      "input_hash": "759fec8f923b8e63",
+      "input_hash": "b513a51082eea2bb",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.526+00:00",
-      "duration_ms": 90.53,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.376+00:00",
+      "duration_ms": 92.77,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.526+00:00",
-          "duration_ms": 0.1,
+          "started_at": "2026-07-31T08:00:39.376+00:00",
+          "duration_ms": 0.04,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "started_at": "2026-07-31T08:00:39.376+00:00",
           "duration_ms": 0.02,
           "detail": "价格、日期、画布比例和文案检查通过。"
         },
@@ -204,7 +215,7 @@
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.526+00:00",
+          "started_at": "2026-07-31T08:00:39.376+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -212,32 +223,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.526+00:00",
-          "duration_ms": 90.32,
+          "started_at": "2026-07-31T08:00:39.376+00:00",
+          "duration_ms": 92.67,
           "detail": "营销图片已生成。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.469+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTeAOo",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": "[MKT-003 营销图片](https://acn4y3muxbcy.feishu.cn/file/FZbjbUb7PoDHz8x6H0bcLdA6nNd)",
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-004",
-      "img_type": "电商主图",
-      "aspect_ratio": "1:1",
-      "deploy_date": "2026-07-30",
-      "campaign_name": "会员专享日",
-      "promo_price": 109.0,
       "campaign_start": "2026-07-29",
-      "campaign_end": "2026-07-31",
-      "main_text": "会员专享 城市随行",
+      "deploy_date": "2026-07-30",
+      "aspect_ratio": "1:1",
       "sub_text": "突出会员活动信息",
+      "main_text": "会员专享 城市随行",
+      "promo_price": 109.0,
+      "img_type": "电商主图",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "会员专享日",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "PASSED",
       "blocked_reason": "",
       "violations": [],
@@ -249,33 +265,33 @@
         "height": 800,
         "format": "PNG"
       },
-      "input_hash": "6517e4298e05f81f",
+      "input_hash": "187d0ae409ff8414",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.617+00:00",
-      "duration_ms": 100.04,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.469+00:00",
+      "duration_ms": 100.84,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.617+00:00",
-          "duration_ms": 0.07,
+          "started_at": "2026-07-31T08:00:39.469+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.617+00:00",
-          "duration_ms": 0.01,
+          "started_at": "2026-07-31T08:00:39.469+00:00",
+          "duration_ms": 0.02,
           "detail": "价格、日期、画布比例和文案检查通过。"
         },
         {
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.617+00:00",
+          "started_at": "2026-07-31T08:00:39.469+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -283,32 +299,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.617+00:00",
-          "duration_ms": 99.91,
+          "started_at": "2026-07-31T08:00:39.469+00:00",
+          "duration_ms": 100.77,
           "detail": "营销图片已生成。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.570+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTIlOl",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": "[MKT-004 营销图片](https://acn4y3muxbcy.feishu.cn/file/MOjUb5VIeoMScrxhssxcLIRUnKe)",
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-005",
-      "img_type": "促销海报",
-      "aspect_ratio": "3:4",
-      "deploy_date": "2026-07-31",
-      "campaign_name": "结营限时购",
-      "promo_price": 89.0,
       "campaign_start": "2026-07-30",
-      "campaign_end": "2026-07-31",
-      "main_text": "限时好价 轻装出发",
+      "deploy_date": "2026-07-31",
+      "aspect_ratio": "3:4",
       "sub_text": "需将杯身改成粉红色匹配氛围",
+      "main_text": "限时好价 轻装出发",
+      "promo_price": 89.0,
+      "img_type": "促销海报",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "结营限时购",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "BLOCKED",
       "blocked_reason": "要求修改产品外观或颜色：“改成粉红色”",
       "violations": [
@@ -322,25 +343,25 @@
       "rules_version": "2026-07-30.1",
       "generated_image": null,
       "artifact": null,
-      "input_hash": "3cc0f5f4ac8d4cd9",
+      "input_hash": "d3a472516b74c506",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.717+00:00",
-      "duration_ms": 0.53,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.570+00:00",
+      "duration_ms": 0.43,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
-          "duration_ms": 0.08,
+          "started_at": "2026-07-31T08:00:39.570+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "BLOCKED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "started_at": "2026-07-31T08:00:39.570+00:00",
           "duration_ms": 0.02,
           "detail": "发现 1 项需要修改的内容。"
         },
@@ -348,7 +369,7 @@
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "started_at": "2026-07-31T08:00:39.570+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -356,32 +377,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "SKIPPED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
-          "duration_ms": 0.41,
+          "started_at": "2026-07-31T08:00:39.570+00:00",
+          "duration_ms": 0.37,
           "detail": "请先处理审查问题，再生成营销图片。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.570+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTtKPA",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": null,
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-006",
-      "img_type": "电商主图",
-      "aspect_ratio": "1:1",
-      "deploy_date": "2026-07-29",
-      "campaign_name": "夏日出行周",
-      "promo_price": null,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-07-31",
-      "main_text": "夏日出行 轻装随行",
+      "deploy_date": "2026-07-29",
+      "aspect_ratio": "1:1",
       "sub_text": "突出活动价格",
+      "main_text": "夏日出行 轻装随行",
+      "promo_price": null,
+      "img_type": "电商主图",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "夏日出行周",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "BLOCKED",
       "blocked_reason": "活动价缺失",
       "violations": [
@@ -395,25 +421,25 @@
       "rules_version": "2026-07-30.1",
       "generated_image": null,
       "artifact": null,
-      "input_hash": "9b38dd4dc5db3500",
+      "input_hash": "23b843b29650031e",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.717+00:00",
-      "duration_ms": 0.39,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.570+00:00",
+      "duration_ms": 0.32,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
-          "duration_ms": 0.04,
+          "started_at": "2026-07-31T08:00:39.570+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "BLOCKED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "started_at": "2026-07-31T08:00:39.570+00:00",
           "duration_ms": 0.02,
           "detail": "发现 1 项需要修改的内容。"
         },
@@ -421,7 +447,7 @@
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
+          "started_at": "2026-07-31T08:00:39.570+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -429,32 +455,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "SKIPPED",
-          "started_at": "2026-07-31T05:15:20.717+00:00",
-          "duration_ms": 0.31,
+          "started_at": "2026-07-31T08:00:39.570+00:00",
+          "duration_ms": 0.27,
           "detail": "请先处理审查问题，再生成营销图片。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTWtfg",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": null,
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-007",
-      "img_type": "促销海报",
-      "aspect_ratio": "3:4",
-      "deploy_date": "2026-08-02",
-      "campaign_name": "夏日出行周",
-      "promo_price": 99.0,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-07-31",
-      "main_text": "夏日出行 轻装随行",
+      "deploy_date": "2026-08-02",
+      "aspect_ratio": "3:4",
       "sub_text": "用于周末社交平台投放",
+      "main_text": "夏日出行 轻装随行",
+      "promo_price": 99.0,
+      "img_type": "促销海报",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "夏日出行周",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "BLOCKED",
       "blocked_reason": "投放日期 2026-08-02 超出活动周期 2026-07-25 至 2026-07-31",
       "violations": [
@@ -468,25 +499,25 @@
       "rules_version": "2026-07-30.1",
       "generated_image": null,
       "artifact": null,
-      "input_hash": "13fb27f8ff005eb0",
+      "input_hash": "606ded6b935d92b5",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.718+00:00",
-      "duration_ms": 0.33,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.571+00:00",
+      "duration_ms": 0.31,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
-          "duration_ms": 0.04,
+          "started_at": "2026-07-31T08:00:39.571+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "BLOCKED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.01,
           "detail": "发现 1 项需要修改的内容。"
         },
@@ -494,7 +525,7 @@
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -502,32 +533,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "SKIPPED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.26,
           "detail": "请先处理审查问题，再生成营销图片。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTXHam",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": null,
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-008",
-      "img_type": "电商主图",
-      "aspect_ratio": "1:1",
-      "deploy_date": "2026-07-30",
-      "campaign_name": "限时秒杀",
-      "promo_price": 69.0,
       "campaign_start": "2026-07-30",
-      "campaign_end": "2026-07-31",
-      "main_text": "限时秒杀 仅此两天",
+      "deploy_date": "2026-07-30",
+      "aspect_ratio": "1:1",
       "sub_text": "价格字号需要明显",
+      "main_text": "限时秒杀 仅此两天",
+      "promo_price": 69.0,
+      "img_type": "电商主图",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "限时秒杀",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "BLOCKED",
       "blocked_reason": "活动价 69 元低于最低允许价格 89 元",
       "violations": [
@@ -541,25 +577,25 @@
       "rules_version": "2026-07-30.1",
       "generated_image": null,
       "artifact": null,
-      "input_hash": "210dadb76ea750d1",
+      "input_hash": "606f9750dea6e0e6",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.718+00:00",
-      "duration_ms": 0.31,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.571+00:00",
+      "duration_ms": 0.3,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
-          "duration_ms": 0.03,
+          "started_at": "2026-07-31T08:00:39.571+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "BLOCKED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.01,
           "detail": "发现 1 项需要修改的内容。"
         },
@@ -567,7 +603,7 @@
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -575,32 +611,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "SKIPPED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.25,
           "detail": "请先处理审查问题，再生成营销图片。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTnoLR",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": null,
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-009",
-      "img_type": "促销海报",
-      "aspect_ratio": "3:4",
-      "deploy_date": "2026-07-30",
-      "campaign_name": "夏日出行周",
-      "promo_price": 99.0,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-07-31",
-      "main_text": "全网第一的城市保温杯",
+      "deploy_date": "2026-07-30",
+      "aspect_ratio": "3:4",
       "sub_text": "突出品质感和活动价",
+      "main_text": "全网第一的城市保温杯",
+      "promo_price": 99.0,
+      "img_type": "促销海报",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "夏日出行周",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "BLOCKED",
       "blocked_reason": "文案包含禁用词“全网第一”",
       "violations": [
@@ -614,25 +655,25 @@
       "rules_version": "2026-07-30.1",
       "generated_image": null,
       "artifact": null,
-      "input_hash": "0464612208b70b53",
+      "input_hash": "85cb57605a2b5e33",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.718+00:00",
-      "duration_ms": 0.32,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.571+00:00",
+      "duration_ms": 0.3,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
-          "duration_ms": 0.03,
+          "started_at": "2026-07-31T08:00:39.571+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "BLOCKED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.01,
           "detail": "发现 1 项需要修改的内容。"
         },
@@ -640,7 +681,7 @@
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
+          "started_at": "2026-07-31T08:00:39.571+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -648,32 +689,37 @@
           "name": "render",
           "label": "图片生成",
           "status": "SKIPPED",
-          "started_at": "2026-07-31T05:15:20.718+00:00",
-          "duration_ms": 0.26,
+          "started_at": "2026-07-31T08:00:39.571+00:00",
+          "duration_ms": 0.25,
           "detail": "请先处理审查问题，再生成营销图片。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.572+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZT5ouA",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": null,
+      "sync_status": "SKIPPED_UNCHANGED"
     },
     {
       "task_id": "MKT-010",
-      "img_type": "横版Banner",
-      "aspect_ratio": "16:9",
-      "deploy_date": "2026-07-30",
-      "campaign_name": "夏日出行周",
-      "promo_price": 99.0,
       "campaign_start": "2026-07-25",
-      "campaign_end": "2026-07-31",
-      "main_text": "夏日出行 轻装随行",
+      "deploy_date": "2026-07-30",
+      "aspect_ratio": "16:9",
       "sub_text": "把杯身改成红色以匹配促销氛围",
+      "main_text": "夏日出行 轻装随行",
+      "promo_price": 99.0,
+      "img_type": "横版Banner",
+      "campaign_end": "2026-07-31",
+      "campaign_name": "夏日出行周",
       "min_price": 89.0,
+      "product_name": "CHA CUP 城市轻量保温杯",
       "status": "BLOCKED",
       "blocked_reason": "画布比例 16:9 不在允许范围；要求修改产品外观或颜色：“改成红色”",
       "violations": [
@@ -693,33 +739,33 @@
       "rules_version": "2026-07-30.1",
       "generated_image": null,
       "artifact": null,
-      "input_hash": "815326de7d1c2a35",
+      "input_hash": "f168cabb6ab62c2c",
       "pipeline_version": "2026-07-31.1",
-      "source": "marketing_tasks.csv",
-      "started_at": "2026-07-31T05:15:20.719+00:00",
-      "duration_ms": 0.35,
+      "source": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "started_at": "2026-07-31T08:00:39.572+00:00",
+      "duration_ms": 0.31,
       "execution_trace": [
         {
           "name": "normalize",
           "label": "信息整理",
           "status": "COMPLETED",
-          "started_at": "2026-07-31T05:15:20.719+00:00",
-          "duration_ms": 0.04,
+          "started_at": "2026-07-31T08:00:39.572+00:00",
+          "duration_ms": 0.02,
           "detail": "已整理并识别任务信息。"
         },
         {
           "name": "deterministic_audit",
           "label": "规则审查",
           "status": "BLOCKED",
-          "started_at": "2026-07-31T05:15:20.719+00:00",
-          "duration_ms": 0.03,
+          "started_at": "2026-07-31T08:00:39.572+00:00",
+          "duration_ms": 0.02,
           "detail": "发现 2 项需要修改的内容。"
         },
         {
           "name": "semantic_review",
           "label": "语义复核",
           "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "started_at": "2026-07-31T08:00:39.572+00:00",
           "duration_ms": 0.0,
           "detail": "语义复核暂未启用。"
         },
@@ -727,19 +773,34 @@
           "name": "render",
           "label": "图片生成",
           "status": "SKIPPED",
-          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "started_at": "2026-07-31T08:00:39.572+00:00",
           "duration_ms": 0.26,
           "detail": "请先处理审查问题，再生成营销图片。"
         },
         {
           "name": "delivery",
           "label": "飞书交付",
-          "status": "NOT_CONFIGURED",
-          "started_at": "2026-07-31T05:15:20.719+00:00",
+          "status": "SKIPPED",
+          "started_at": "2026-07-31T08:00:39.572+00:00",
           "duration_ms": 0.0,
-          "detail": "飞书交付暂未启用。"
+          "detail": "输入未变化，沿用飞书中的处理结果。"
         }
-      ]
+      ],
+      "feishu_record_id": "recvqDg0ZTbobB",
+      "feishu_base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+      "feishu_image_url": null,
+      "sync_status": "SKIPPED_UNCHANGED"
     }
-  ]
+  ],
+  "feishu_sync": {
+    "base_name": "FDE Mock CHA CUP 营销素材 20260728-1047",
+    "base_url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+    "dry_run": false,
+    "force": false,
+    "records_read": 10,
+    "records_written": 0,
+    "images_uploaded": 0,
+    "unchanged_skipped": 10,
+    "legacy_inputs_restored": 0
+  }
 }

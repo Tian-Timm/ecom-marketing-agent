@@ -69,7 +69,11 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn("在线案例演示", self.html)
         self.assertIn("查看预置案例的输入信息", self.html)
         self.assertIn('fetchJson("/api/run"', self.html)
-        self.assertIn("configureRuntimeUI(apiOnline)", self.html)
+        self.assertIn("configureRuntimeUI(status)", self.html)
+        self.assertIn("X-Demo-Admin-Token", self.html)
+        self.assertIn("飞书多维表格", self.html)
+        self.assertNotIn("DEEPSEEK_API_KEY", self.html)
+        self.assertNotIn("FEISHU_APP_SECRET", self.html)
         self.assertNotIn("const forbiddenWords", self.html)
 
     def test_generated_images_use_the_pipeline_version_to_avoid_stale_cache(self) -> None:
@@ -77,9 +81,15 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn("?v=${encodeURIComponent(assetVersion)}", self.html)
         self.assertIn("download.href = generatedImageUrl", self.html)
 
-    def test_demo_exposes_pipeline_evidence_without_claiming_unwired_steps(self) -> None:
+    def test_demo_exposes_pipeline_and_feishu_delivery_evidence(self) -> None:
         self.assertEqual(self.report["schema_version"], "2.0")
         self.assertTrue(self.report["pipeline_version"])
+        self.assertIn("/base/", self.report["source"])
+        sync = self.report["feishu_sync"]
+        self.assertEqual(sync["records_read"], 10)
+        self.assertIn(sync["records_written"], {0, 10})
+        self.assertIn(sync["images_uploaded"], {0, 4})
+        self.assertIn(sync["unchanged_skipped"], {0, 10})
         for record in self.report["records"]:
             self.assertTrue(record["input_hash"])
             self.assertGreaterEqual(record["duration_ms"], 0)
@@ -88,7 +98,8 @@ class FrontendDemoContractTests(unittest.TestCase):
                 for step in record["execution_trace"]
             }
             self.assertEqual(steps["semantic_review"]["status"], "NOT_CONFIGURED")
-            self.assertEqual(steps["delivery"]["status"], "NOT_CONFIGURED")
+            self.assertIn(steps["delivery"]["status"], {"COMPLETED", "SKIPPED"})
+            self.assertIn(record["sync_status"], {"COMPLETED", "SKIPPED_UNCHANGED"})
         self.assertIn("查看处理记录", self.html)
         self.assertIn("复制 JSON", self.html)
         self.assertIn("REVIEW_REQUIRED", self.html)
@@ -101,6 +112,10 @@ class FrontendDemoContractTests(unittest.TestCase):
             "demo-case-list",
             "input-pane-title",
             "input-pane-note",
+            "base-link",
+            "semantic-mode",
+            "last-sync",
+            "admin-dialog",
         }
         self.assertTrue(required.issubset(set(self.parser.ids)))
         self.assertEqual(len(self.parser.ids), len(set(self.parser.ids)))

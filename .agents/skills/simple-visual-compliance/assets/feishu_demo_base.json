@@ -1,0 +1,23 @@
+{
+  "name": "FDE Mock CHA CUP 营销素材 20260728-1047",
+  "url": "https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+  "base_token": "SfsSb7Tw2aeiQJsmQTlczjX7nyN",
+  "product_table": {
+    "id": "tblVd37g9T0cdOTR",
+    "name": "商品资料"
+  },
+  "task_table": {
+    "id": "tblSjaJQZyyf1WR4",
+    "name": "出图任务"
+  },
+  "legacy_input_fixture": ".agents/skills/simple-visual-compliance/assets/marketing_tasks.csv",
+  "output_fields": {
+    "status": "审查状态",
+    "issues": "问题说明",
+    "image_url": "生成图片链接",
+    "image_attachment": "生成图片",
+    "processed_at": "处理时间",
+    "input_hash": "输入指纹",
+    "pipeline_version": "处理版本"
+  }
+}

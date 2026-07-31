@@ -1,6 +1,11 @@
 {
   "version": 2,
   "cleanUrls": true,
+  "functions": {
+    "api/*.py": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     { "source": "/", "destination": "/index.html" }
   ]

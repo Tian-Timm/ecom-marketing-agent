@@ -83,7 +83,12 @@ class RuleAuditTests(unittest.TestCase):
 class PipelineTests(unittest.TestCase):
     def test_execute_task_returns_auditable_result_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
-            result = execute_task(valid_record(), Path(temp_dir), source="test")
+            result = execute_task(
+                valid_record(),
+                Path(temp_dir),
+                source="test",
+                semantic_reviewer=None,
+            )
             self.assertEqual(result["status"], "PASSED")
             self.assertEqual(result["source"], "test")
             self.assertEqual(len(result["input_hash"]), 16)
@@ -102,6 +107,64 @@ class PipelineTests(unittest.TestCase):
                 result["execution_trace"][2]["status"],
                 "NOT_CONFIGURED",
             )
+
+    def test_semantic_block_prevents_rendering(self) -> None:
+        class Reviewer:
+            def review(self, record: dict) -> dict:
+                return {
+                    "status": "BLOCKED",
+                    "violations": [{
+                        "code": "SEMANTIC_FORBIDDEN_CLAIM",
+                        "field": "main_text",
+                        "message": "文案包含无法证明的绝对化承诺",
+                        "value": "行业领先",
+                        "source": "deepseek",
+                    }],
+                    "confidence": 0.92,
+                    "summary": "发现绝对化宣传风险。",
+                    "model": "test-model",
+                }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = execute_task(
+                valid_record(main_text="行业领先的保温体验"),
+                Path(temp_dir),
+                source="test",
+                semantic_reviewer=Reviewer(),
+            )
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertIsNone(result["generated_image"])
+            self.assertEqual(
+                result["execution_trace"][2]["status"],
+                "BLOCKED",
+            )
+
+    def test_semantic_failure_requires_manual_review(self) -> None:
+        class Reviewer:
+            def review(self, record: dict) -> dict:
+                return {
+                    "status": "REVIEW_REQUIRED",
+                    "violations": [{
+                        "code": "SEMANTIC_AMBIGUOUS_REQUIREMENT",
+                        "field": "copy",
+                        "message": "语义复核暂时无法完成，任务已转人工复核",
+                        "value": "",
+                        "source": "deepseek",
+                    }],
+                    "confidence": 0.0,
+                    "summary": "语义服务不可用，未默认放行。",
+                    "model": "test-model",
+                }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = execute_task(
+                valid_record(),
+                Path(temp_dir),
+                source="test",
+                semantic_reviewer=Reviewer(),
+            )
+            self.assertEqual(result["status"], "REVIEW_REQUIRED")
+            self.assertIsNone(result["generated_image"])
 
     def test_badge_text_stays_inside_red_badge(self) -> None:
         for aspect_ratio in ("1:1", "3:4"):
