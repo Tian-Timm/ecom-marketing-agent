@@ -143,12 +143,18 @@ def update_fields_for_result(
         if image_url
         else None
     )
+    try:
+        dt = datetime.strptime(processed_at, "%Y-%m-%d %H:%M:%S")
+        processed_at_val: Any = int(dt.timestamp() * 1000)
+    except (ValueError, TypeError):
+        processed_at_val = processed_at
+
     fields = {
         "补充要求": sub_text,
         output_fields["status"]: STATUS_TO_BASE.get(result.get("status"), "执行失败"),
         output_fields["issues"]: issues or None,
         output_fields["image_url"]: image_value,
-        output_fields["processed_at"]: processed_at,
+        output_fields["processed_at"]: processed_at_val,
         output_fields["input_hash"]: result.get("input_hash"),
         output_fields["pipeline_version"]: (
             f"规则 {result.get('rules_version')} / 流水线 {result.get('pipeline_version')}"

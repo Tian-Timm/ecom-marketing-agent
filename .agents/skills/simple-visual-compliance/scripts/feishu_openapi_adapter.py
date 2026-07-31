@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -13,6 +14,18 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 FEISHU_API = "https://open.feishu.cn/open-apis"
+
+
+def _safe_urlopen(request: urllib.request.Request, timeout: float = 15.0) -> Any:
+    try:
+        return urllib.request.urlopen(request, timeout=timeout)
+    except urllib.error.URLError as exc:
+        if isinstance(exc, urllib.error.HTTPError):
+            raise
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return urllib.request.urlopen(request, timeout=timeout, context=ctx)
 
 
 class FeishuOpenApiError(RuntimeError):
@@ -73,7 +86,7 @@ class FeishuOpenApiAdapter:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(
+            with _safe_urlopen(
                 request,
                 timeout=self.timeout_seconds,
             ) as response:
@@ -111,7 +124,7 @@ class FeishuOpenApiAdapter:
             method=method,
         )
         try:
-            with urllib.request.urlopen(
+            with _safe_urlopen(
                 request,
                 timeout=self.timeout_seconds,
             ) as response:
@@ -194,7 +207,7 @@ class FeishuOpenApiAdapter:
             method="POST",
         )
         try:
-            with urllib.request.urlopen(
+            with _safe_urlopen(
                 request,
                 timeout=self.timeout_seconds,
             ) as response:
@@ -239,7 +252,7 @@ class FeishuOpenApiAdapter:
             method="GET",
         )
         try:
-            with urllib.request.urlopen(
+            with _safe_urlopen(
                 request,
                 timeout=self.timeout_seconds,
             ) as response:
