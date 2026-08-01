@@ -168,7 +168,57 @@ class PublicDemoApiTests(unittest.TestCase):
         env = {
             "PUBLIC_DEMO_RUN_ENABLED": "true",
             "PUBLIC_DEMO_TASK_IDS": "MKT-001",
-            "PUBLIC_DEMO_RATE_LIMIT": "2",
+        }
+        mock_report = {
+            "rules_version": "1.0",
+            "pipeline_version": "1.0",
+            "records": [{"task_id": "MKT-001"}],
+            "summary": {},
+            "runtime": {},
+            "execution_mode": "live_readonly",
+            "writeback": False,
+        }
+        with patch.dict(os.environ, env, clear=True), patch("src.web_api.run_public_demo_task", return_value=mock_report):
+            for _ in range(8):
+                h = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.50")
+                web_api.handle_demo_run(h)
+                self.assertEqual(h.status, 200)
+
+            # 9th request from same IP should be blocked by the default limit (429)
+            ninth = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.50")
+            web_api.handle_demo_run(ninth)
+            self.assertEqual(ninth.status, 429)
+            self.assertIn("Retry-After", ninth.response_headers)
+
+    def test_public_rate_limit_is_counted_per_ip(self) -> None:
+        env = {
+            "PUBLIC_DEMO_RUN_ENABLED": "true",
+            "PUBLIC_DEMO_TASK_IDS": "MKT-001",
+        }
+        mock_report = {
+            "rules_version": "1.0",
+            "pipeline_version": "1.0",
+            "records": [{"task_id": "MKT-001"}],
+            "summary": {},
+            "runtime": {},
+            "execution_mode": "live_readonly",
+            "writeback": False,
+        }
+        with patch.dict(os.environ, env, clear=True), patch("src.web_api.run_public_demo_task", return_value=mock_report):
+            for _ in range(8):
+                handler = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.51")
+                web_api.handle_demo_run(handler)
+                self.assertEqual(handler.status, 200)
+
+            other_ip = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.52")
+            web_api.handle_demo_run(other_ip)
+            self.assertEqual(other_ip.status, 200)
+
+    def test_public_rate_limit_resets_after_window(self) -> None:
+        env = {
+            "PUBLIC_DEMO_RUN_ENABLED": "true",
+            "PUBLIC_DEMO_TASK_IDS": "MKT-001",
+            "PUBLIC_DEMO_RATE_LIMIT": "1",
             "PUBLIC_DEMO_RATE_WINDOW_SECONDS": "600",
         }
         mock_report = {
@@ -180,17 +230,19 @@ class PublicDemoApiTests(unittest.TestCase):
             "execution_mode": "live_readonly",
             "writeback": False,
         }
-        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_public_demo_task", return_value=mock_report):
-            for _ in range(2):
-                h = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.50")
-                web_api.handle_demo_run(h)
-                self.assertEqual(h.status, 200)
+        with patch.dict(os.environ, env, clear=True), patch("src.web_api.run_public_demo_task", return_value=mock_report), patch("src.web_api.time.monotonic", side_effect=[100.0, 100.0, 700.0]):
+            first = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.53")
+            web_api.handle_demo_run(first)
+            self.assertEqual(first.status, 200)
 
-            # 3rd request from same IP should be blocked by rate limit (429)
-            h3 = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.50")
-            web_api.handle_demo_run(h3)
-            self.assertEqual(h3.status, 429)
-            self.assertIn("Retry-After", h3.response_headers)
+            second = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.53")
+            web_api.handle_demo_run(second)
+            self.assertEqual(second.status, 429)
+            self.assertIn("Retry-After", second.response_headers)
+
+            after_window = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.53")
+            web_api.handle_demo_run(after_window)
+            self.assertEqual(after_window.status, 200)
 
     def test_public_and_admin_rate_limits_are_independent(self) -> None:
         env = {

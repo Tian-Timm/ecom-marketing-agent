@@ -49,7 +49,7 @@ MAX_BODY_BYTES = 8 * 1024
 RATE_WINDOW_SECONDS = 10 * 60
 RATE_LIMIT = 6
 PUBLIC_DEMO_RATE_WINDOW_DEFAULT = 600
-PUBLIC_DEMO_RATE_LIMIT_DEFAULT = 3
+PUBLIC_DEMO_RATE_LIMIT_DEFAULT = 8
 FORBIDDEN_PUBLIC_KEYS = {
     "source_id", "base_token", "base_url", "table_id",
     "record_id", "credential_ref", "force",
