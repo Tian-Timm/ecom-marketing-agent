@@ -229,6 +229,16 @@ class SourceWebApiTests(unittest.TestCase):
         self.assertEqual(handler.status, 403)
         adapter_b.download_media.assert_not_called()
 
+    def test_configured_image_read_requires_admin_token(self) -> None:
+        with patch.dict(os.environ, {"DEMO_ADMIN_TOKEN": "secret-admin"}, clear=False):
+            handler = FakeHandler(
+                path="/api/image?source_id=source_a&file_token=token-a",
+                token="",
+            )
+            web_api.handle_image(handler)
+
+        self.assertEqual(handler.status, 403)
+
     def test_malformed_selection_is_400_and_revision_conflict_is_409(self) -> None:
         repo = MagicMock()
         with patch.object(web_api, "config_repository", return_value=persistent(repo)):

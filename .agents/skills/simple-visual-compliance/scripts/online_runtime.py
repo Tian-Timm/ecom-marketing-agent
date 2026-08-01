@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import tempfile
@@ -329,11 +330,21 @@ def run_public_demo_task(task_id: str) -> Dict[str, Any]:
             source=config["url"],
             semantic_reviewer=semantic_reviewer,
         )
+        generated_image = record.get("generated_image")
+        if generated_image:
+            image_path = Path(temp_dir) / str(generated_image)
+            if image_path.exists():
+                encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
+                record["public_image_data_url"] = f"data:image/png;base64,{encoded}"
+
+    record["execution_mode"] = "live_readonly"
+    record["writeback"] = False
 
     report = build_report([record], source=config["url"], rules=rules)
     report["runtime"] = runtime_status()
     report["execution_mode"] = "live_readonly"
     report["writeback"] = False
+    report["public_image_data_url"] = record.get("public_image_data_url")
     report["feishu_sync"] = {
         "base_name": config["name"],
         "base_url": config["url"],

@@ -434,14 +434,17 @@ def handle_demo_run(handler: Any) -> None:
                 lock_acquired = True
 
             report = run_public_demo_task(task_id)
+            record = report["records"][0]
+            public_image_data_url = report.get("public_image_data_url") or record.get("public_image_data_url")
             send_json(handler, {
                 "rules_version": report["rules_version"],
                 "pipeline_version": report["pipeline_version"],
-                "record": report["records"][0],
+                "record": record,
                 "summary": report["summary"],
                 "runtime": report["runtime"],
                 "execution_mode": report["execution_mode"],
                 "writeback": report["writeback"],
+                "public_image_data_url": public_image_data_url,
             })
             return
 

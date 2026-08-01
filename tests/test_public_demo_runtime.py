@@ -55,6 +55,7 @@ class PublicDemoRuntimeTests(unittest.TestCase):
             result = dict(records[0])
             result["generated_image"] = "MKT-001_rendered.png"
             result["artifact"] = {"filename": result["generated_image"]}
+            (output_dir / result["generated_image"]).write_bytes(b"fake-png")
             self.assertTrue(Path(output_dir).is_relative_to(Path(tempfile.gettempdir())))
             return [result]
 
@@ -70,6 +71,8 @@ class PublicDemoRuntimeTests(unittest.TestCase):
             report = web_api.run_public_demo_task("MKT-001")
 
         self.assertEqual((report["execution_mode"], report["writeback"]), ("live_readonly", False))
+        self.assertTrue(report["public_image_data_url"].startswith("data:image/png;base64,"))
+        self.assertNotIn(str(tempfile.gettempdir()), str(report))
         record = report["records"][0]
         self.assertNotEqual(record.get("sync_status"), "SKIPPED_UNCHANGED")
         self.assertNotIn("SKIPPED_UNCHANGED", str(record))

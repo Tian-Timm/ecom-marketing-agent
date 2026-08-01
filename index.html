@@ -2230,6 +2230,7 @@
       <div class="demo-heading">
         <h2 id="demo-heading">体验 Demo</h2>
         <p id="demo-note">选择一个真实案例，点击“运行 Agent”，查看同一套流程如何放行合规任务并阻断业务风险。</p>
+        <p id="public-readonly-note" class="runtime-hint">实时读取并执行，本次公开体验不会修改飞书数据。</p>
         <div class="demo-pipeline" aria-label="Agent 执行过程">
           <span>读取商品资料</span><i aria-hidden="true">↓</i>
           <span>读取营销任务</span><i aria-hidden="true">↓</i>
@@ -2517,6 +2518,7 @@
     const inputPaneTitle = document.getElementById("input-pane-title");
     const inputPaneNote = document.getElementById("input-pane-note");
     const demoNote = document.getElementById("demo-note");
+    const publicReadonlyNote = document.getElementById("public-readonly-note");
     const demoCases = Array.from(document.querySelectorAll("[data-demo-task]"));
     const toast = document.getElementById("toast");
     const adminDialog = document.getElementById("admin-dialog");
@@ -2641,6 +2643,7 @@
       const canConfigureSources = Boolean(runtime?.capabilities?.onboarding_write);
       onboardingPanel.classList.toggle("hidden", !state.isAdminMode || !canConfigureSources);
       sourceSelectCell.classList.toggle("hidden", !state.isAdminMode);
+      publicReadonlyNote.classList.toggle("hidden", state.isAdminMode || Boolean(state.sourceId));
       modeStatus.textContent = state.isAdminMode ? "数据源接入模式" : "公开演示模式";
       adminModeToggle.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
       datasourceAccessButton.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
@@ -2803,6 +2806,38 @@
       return panel;
     }
 
+    function buildPublicExecutionSummary(record) {
+      if (state.sourceId || record.execution_mode !== "live_readonly") return null;
+      const trace = Array.isArray(record.execution_trace) ? record.execution_trace : [];
+      const findStep = (name) => trace.find((step) => step.name === name);
+      const statusText = (step, fallback = "未提供") => ({
+        COMPLETED: "已完成",
+        PASSED: "已通过",
+        BLOCKED: "已阻断",
+        REVIEW_REQUIRED: "待复核",
+        SKIPPED: "已跳过",
+        NOT_CONFIGURED: "未配置",
+        FAILED: "失败"
+      }[step?.status] || fallback);
+      const panel = document.createElement("div");
+      panel.className = "semantic-evidence";
+      const title = document.createElement("strong");
+      title.textContent = "公开运行状态";
+      panel.appendChild(title);
+      [
+        "运行模式：实时只读运行",
+        "飞书写入：未回写飞书",
+        `规则审查：${statusText(findStep("deterministic_audit"))}`,
+        `DeepSeek 语义复核：${statusText(record.semantic_review ? {status: record.semantic_review.status} : findStep("semantic_review"))}`,
+        `图片结果：${record.public_image_data_url ? "已生成临时图片" : "已阻断，未生成图片"}`
+      ].forEach((text) => {
+        const line = document.createElement("p");
+        line.textContent = text;
+        panel.appendChild(line);
+      });
+      return panel;
+    }
+
     function renderResult(record, cacheBust = false) {
       if (state.sourceImageObjectUrl) { URL.revokeObjectURL(state.sourceImageObjectUrl); state.sourceImageObjectUrl = ""; }
       resultContent.replaceChildren();
@@ -2863,10 +2898,13 @@
         summary.appendChild(failed);
       }
 
+      const publicExecution = buildPublicExecutionSummary(record);
+      if (publicExecution) summary.appendChild(publicExecution);
+
       const preview = document.createElement("div");
       preview.className = "preview";
       let generatedImageUrl = "";
-      if (record.status === "PASSED" && (record.generated_image || record.source_image_url)) {
+      if (record.status === "PASSED" && (record.public_image_data_url || record.generated_image || record.source_image_url)) {
         const image = document.createElement("img");
         const assetVersion = cacheBust
           ? Date.now()
@@ -2874,11 +2912,12 @@
         const suffix = assetVersion
           ? `?v=${encodeURIComponent(assetVersion)}`
           : "";
-        generatedImageUrl = record.source_image_url
-          ? ""
-          : record.generated_image_url
-            ? `${record.generated_image_url}${record.generated_image_url.includes("?") ? "&" : "?"}v=${encodeURIComponent(assetVersion || "")}`
-            : `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
+        generatedImageUrl = record.public_image_data_url
+          || (record.source_image_url
+            ? ""
+            : record.generated_image_url
+              ? `${record.generated_image_url}${record.generated_image_url.includes("?") ? "&" : "?"}v=${encodeURIComponent(assetVersion || "")}`
+              : `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`);
         if (record.source_image_url && state.adminToken) {
           fetch(record.source_image_url, {headers: {"X-Demo-Admin-Token": state.adminToken}})
             .then((response) => { if (!response.ok) throw new Error("图片读取失败"); return response.blob(); })
@@ -3227,6 +3266,9 @@
           body: JSON.stringify({action: "run_task", task_id: state.selectedId})
         });
         const record = result.record;
+        record.execution_mode = result.execution_mode;
+        record.writeback = result.writeback;
+        record.public_image_data_url = result.public_image_data_url || record.public_image_data_url;
         state.rulesVersion = result.rules_version || state.rulesVersion;
         const index = state.records.findIndex((item) => item.task_id === record.task_id);
         if (index >= 0) {

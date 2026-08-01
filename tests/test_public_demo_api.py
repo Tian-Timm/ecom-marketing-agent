@@ -66,6 +66,7 @@ class PublicDemoApiTests(unittest.TestCase):
             "runtime": {"online": True},
             "execution_mode": "live_readonly",
             "writeback": False,
+            "public_image_data_url": "data:image/png;base64,ZmFrZQ==",
         }
         with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_public_demo_task", return_value=mock_report) as mock_run:
             handler = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"})
@@ -74,7 +75,17 @@ class PublicDemoApiTests(unittest.TestCase):
             self.assertEqual(handler.status, 200)
             self.assertEqual(handler.json["record"]["task_id"], "MKT-001")
             self.assertEqual((handler.json["execution_mode"], handler.json["writeback"]), ("live_readonly", False))
+            self.assertEqual(handler.json["public_image_data_url"], "data:image/png;base64,ZmFrZQ==")
             mock_run.assert_called_once_with("MKT-001")
+
+    def test_public_frontend_shows_readonly_execution_and_inline_image(self) -> None:
+        index_html = (Path(__file__).parents[1] / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn("实时读取并执行，本次公开体验不会修改飞书数据。", index_html)
+        self.assertIn("实时只读运行", index_html)
+        self.assertIn("未回写飞书", index_html)
+        self.assertIn("DeepSeek 语义复核", index_html)
+        self.assertIn("public_image_data_url", index_html)
 
     def test_public_request_rejects_forbidden_fields(self) -> None:
         env = {"PUBLIC_DEMO_RUN_ENABLED": "true"}
