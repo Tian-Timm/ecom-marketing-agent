@@ -73,11 +73,25 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertNotIn("提交任务", intro)
         self.assertNotIn("合规审查", intro)
         self.assertNotIn("确定性组装", intro)
-        self.assertIn("体验 Demo", self.html)
+        self.assertIn("演示案例", self.html)
+        self.assertIn("实时读取飞书并重新执行，本次公开体验不会修改飞书数据。", self.html)
         self.assertIn("运行 Agent", self.html)
-        self.assertIn("读取商品资料", self.html)
-        self.assertIn("字段语义解析", self.html)
-        self.assertIn("图片生成 / 阻断", self.html)
+        self.assertIn("读取数据", self.html)
+        self.assertIn("字段解析", self.html)
+        self.assertIn("生成或阻断", self.html)
+        for label in ("正常出图", "价格违规", "文案风险", "视觉修改风险"):
+            self.assertIn(f'class="demo-case-name">{label}</span>', self.html)
+        for legacy_label in ("MKT-001 · 正常营销任务", "MKT-008 · 价格违规任务", "MKT-009 · 文案风险任务", "MKT-005 · 视觉修改风险"):
+            self.assertNotIn(legacy_label, self.html)
+        self.assertIn('class="demo-case-id">MKT-001</span>', self.html)
+        self.assertIn('button.setAttribute("aria-pressed", String(active))', self.html)
+        self.assertIn("selectRecord(taskId)", self.html)
+        pipeline_css = self.html.split(".demo-pipeline {", 1)[1].split("}", 1)[0]
+        self.assertIn("overflow: hidden", pipeline_css)
+        self.assertNotIn("overflow-x: auto", pipeline_css)
+        mobile_css = self.html.split("@media (max-width: 640px)", 1)[1]
+        self.assertIn(".demo-case-list", mobile_css)
+        self.assertIn("repeat(2, minmax(0, 1fr))", mobile_css)
         self.assertIn("在线案例演示", self.html)
         self.assertIn("查看预置案例的输入信息", self.html)
         self.assertIn('fetchJson("/api/run"', self.html)
@@ -159,7 +173,6 @@ class FrontendDemoContractTests(unittest.TestCase):
     def test_required_demo_ids_are_unique(self) -> None:
         required = {
             "demo-heading",
-            "demo-note",
             "demo-case-list",
             "input-pane-title",
             "input-pane-note",

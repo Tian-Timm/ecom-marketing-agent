@@ -878,21 +878,27 @@
     .demo-pipeline {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      overflow-x: auto;
+      gap: 4px;
+      grid-column: 1 / -1;
+      margin-top: 0;
+      min-width: 0;
+      overflow: hidden;
       padding-bottom: 2px;
     }
 
     .demo-pipeline span {
-      flex: 0 0 auto;
-      padding: 4px 7px;
+      flex: 1 1 0;
+      min-width: 0;
+      overflow: hidden;
+      padding: 4px 5px;
       border: 1px solid var(--line);
       border-radius: var(--radius-badge);
       color: var(--ink-soft);
       background: var(--surface-subtle);
       font-size: 10px;
       font-weight: 650;
+      text-align: center;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
@@ -979,10 +985,10 @@
     .demo-bar {
       display: grid;
       grid-template-columns: minmax(220px, 0.62fr) minmax(620px, 1.38fr);
-      gap: 14px;
+      gap: 10px;
       align-items: center;
       margin-bottom: 10px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       border: 1px solid var(--line);
       border-radius: var(--radius-panel);
       background: var(--surface);
@@ -990,6 +996,10 @@
     }
 
     .demo-heading {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 6px 10px;
+      align-items: center;
       min-width: 0;
     }
 
@@ -1010,6 +1020,18 @@
       white-space: nowrap;
     }
 
+    .demo-heading .runtime-hint {
+      min-width: 0;
+      margin: 0;
+      padding: 4px 7px;
+      border-left: 2px solid var(--line-strong);
+      border-radius: 0;
+      background: var(--surface-subtle);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
     .demo-case-list {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1017,17 +1039,19 @@
     }
 
     .demo-case {
-      display: grid;
+      display: flex;
+      flex-wrap: wrap;
       min-width: 0;
-      min-height: 38px;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 6px;
+      min-height: 34px;
+      gap: 3px 6px;
       align-items: center;
-      padding: 6px 8px;
+      justify-content: center;
+      padding: 5px 8px;
       border: 1px solid var(--line);
       border-radius: var(--radius-control);
       color: var(--ink-soft);
       background: var(--surface-subtle);
+      cursor: pointer;
       text-align: left;
       transition: background-color 100ms ease, border-color 100ms ease;
     }
@@ -1044,35 +1068,23 @@
     }
 
     .demo-case-name {
-      overflow: hidden;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 650;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .demo-case-result {
-      padding: 2px 5px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-badge);
+    .demo-case-id {
+      display: none;
       color: var(--muted);
-      background: #ffffff;
+      font-family: var(--font-mono);
       font-size: 9px;
-      font-weight: 700;
+      font-weight: 650;
       line-height: 1.2;
       white-space: nowrap;
     }
 
-    .demo-case-result.passed {
-      border-color: #b6c9c1;
-      color: var(--positive);
-      background: var(--positive-soft);
-    }
-
-    .demo-case-result.blocked {
-      border-color: #e0bcb8;
-      color: var(--danger);
-      background: var(--danger-soft);
+    .demo-case.active .demo-case-id {
+      display: inline;
     }
 
     .workspace {
@@ -1954,6 +1966,19 @@
         white-space: normal;
       }
 
+      .demo-heading .runtime-hint {
+        white-space: nowrap;
+      }
+
+      .demo-pipeline {
+        gap: 2px;
+      }
+
+      .demo-pipeline span {
+        padding-inline: 3px;
+        font-size: 9px;
+      }
+
       .demo-case-list {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -2081,34 +2106,32 @@
 
     <section class="demo-bar" aria-labelledby="demo-heading">
       <div class="demo-heading">
-        <h2 id="demo-heading">体验 Demo</h2>
-        <p id="demo-note">选择一个真实案例，点击“运行 Agent”，查看同一套流程如何放行合规任务并阻断业务风险。</p>
-        <p id="public-readonly-note" class="runtime-hint">实时读取并执行，本次公开体验不会修改飞书数据。</p>
+        <h2 id="demo-heading">演示案例</h2>
+        <p id="public-readonly-note" class="runtime-hint">实时读取飞书并重新执行，本次公开体验不会修改飞书数据。</p>
         <div class="demo-pipeline" aria-label="Agent 执行过程">
-          <span>读取商品资料</span><i aria-hidden="true">↓</i>
-          <span>读取营销任务</span><i aria-hidden="true">↓</i>
-          <span>字段语义解析</span><i aria-hidden="true">↓</i>
-          <span>规则审查</span><i aria-hidden="true">↓</i>
-          <span>语义复核</span><i aria-hidden="true">↓</i>
-          <span>图片生成 / 阻断</span>
+          <span>读取数据</span><i aria-hidden="true">→</i>
+          <span>字段解析</span><i aria-hidden="true">→</i>
+          <span>规则审查</span><i aria-hidden="true">→</i>
+          <span>语义复核</span><i aria-hidden="true">→</i>
+          <span>生成或阻断</span>
         </div>
       </div>
       <div class="demo-case-list" id="demo-case-list">
         <button class="demo-case" type="button" data-demo-task="MKT-001" aria-pressed="false">
-          <span class="demo-case-name">MKT-001 · 正常营销任务</span>
-          <span class="demo-case-result passed">出图</span>
+          <span class="demo-case-name">正常出图</span>
+          <span class="demo-case-id">MKT-001</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-008" aria-pressed="false">
-          <span class="demo-case-name">MKT-008 · 价格违规任务</span>
-          <span class="demo-case-result blocked">阻断</span>
+          <span class="demo-case-name">价格违规</span>
+          <span class="demo-case-id">MKT-008</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-009" aria-pressed="false">
-          <span class="demo-case-name">MKT-009 · 文案风险任务</span>
-          <span class="demo-case-result blocked">阻断</span>
+          <span class="demo-case-name">文案风险</span>
+          <span class="demo-case-id">MKT-009</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-005" aria-pressed="false">
-          <span class="demo-case-name">MKT-005 · 视觉修改风险</span>
-          <span class="demo-case-result blocked">阻断</span>
+          <span class="demo-case-name">视觉修改风险</span>
+          <span class="demo-case-id">MKT-005</span>
         </button>
       </div>
     </section>
@@ -2370,7 +2393,6 @@
     const formActions = document.querySelector(".form-actions");
     const inputPaneTitle = document.getElementById("input-pane-title");
     const inputPaneNote = document.getElementById("input-pane-note");
-    const demoNote = document.getElementById("demo-note");
     const publicReadonlyNote = document.getElementById("public-readonly-note");
     const demoCases = Array.from(document.querySelectorAll("[data-demo-task]"));
     const toast = document.getElementById("toast");
@@ -2533,7 +2555,6 @@
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "飞书任务输入";
         inputPaneNote.textContent = "字段来自当前 Base 记录";
-        demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
         runtimeHint.textContent = state.isAdminMode
           ? "当前处于数据源接入模式，可管理与执行配置化数据源。"
           : canExecutePublic
@@ -2544,7 +2565,6 @@
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "案例输入快照";
         inputPaneNote.textContent = "查看预置案例的输入信息";
-        demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
         runtimeHint.textContent = state.isAdminMode
           ? "当前处于数据源接入模式。"
           : "当前可浏览预置案例。";
