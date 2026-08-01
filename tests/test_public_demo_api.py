@@ -64,13 +64,16 @@ class PublicDemoApiTests(unittest.TestCase):
             "records": [{"task_id": "MKT-001", "status": "PASSED"}],
             "summary": {"total": 1},
             "runtime": {"online": True},
+            "execution_mode": "live_readonly",
+            "writeback": False,
         }
-        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_protected_task", return_value=mock_report) as mock_run:
+        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_public_demo_task", return_value=mock_report) as mock_run:
             handler = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"})
             web_api.handle_demo_run(handler)
 
             self.assertEqual(handler.status, 200)
             self.assertEqual(handler.json["record"]["task_id"], "MKT-001")
+            self.assertEqual((handler.json["execution_mode"], handler.json["writeback"]), ("live_readonly", False))
             mock_run.assert_called_once_with("MKT-001")
 
     def test_public_request_rejects_forbidden_fields(self) -> None:
@@ -163,8 +166,10 @@ class PublicDemoApiTests(unittest.TestCase):
             "records": [{"task_id": "MKT-001"}],
             "summary": {},
             "runtime": {},
+            "execution_mode": "live_readonly",
+            "writeback": False,
         }
-        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_protected_task", return_value=mock_report):
+        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_public_demo_task", return_value=mock_report):
             for _ in range(2):
                 h = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.50")
                 web_api.handle_demo_run(h)
@@ -189,8 +194,12 @@ class PublicDemoApiTests(unittest.TestCase):
             "records": [{"task_id": "MKT-001"}],
             "summary": {},
             "runtime": {},
+            "execution_mode": "live_readonly",
+            "writeback": False,
         }
-        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_protected_task", return_value=mock_report):
+        with patch.dict(os.environ, env, clear=False), \
+                patch("src.web_api.run_public_demo_task", return_value=mock_report), \
+                patch("src.web_api.run_protected_task", return_value=mock_report):
             # Consume public quota
             h_pub = FakeHandler(payload={"action": "run_task", "task_id": "MKT-001"}, ip="198.51.100.60")
             web_api.handle_demo_run(h_pub)

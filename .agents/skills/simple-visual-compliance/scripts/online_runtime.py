@@ -20,7 +20,13 @@ from feishu_base_adapter import (
     sync_base,
 )
 from feishu_openapi_adapter import FeishuOpenApiAdapter
-from run_pipeline import PIPELINE_VERSION, SCHEMA_VERSION, fingerprint_task
+from run_pipeline import (
+    PIPELINE_VERSION,
+    SCHEMA_VERSION,
+    build_report,
+    execute_task,
+    fingerprint_task,
+)
 from semantic_review import DeepSeekSemanticReviewer
 from standardize import sanitize_record
 
@@ -266,6 +272,76 @@ def image_token_belongs_to_demo_base(
         _attachment_token(task.get(attachment_field)) == file_token
         for task in tasks
     )
+
+
+def _public_demo_task_ids() -> set[str]:
+    raw = os.environ.get("PUBLIC_DEMO_TASK_IDS", "")
+    return {item.strip() for item in raw.split(",") if item.strip()}
+
+
+def run_public_demo_task(task_id: str) -> Dict[str, Any]:
+    """实时读取并只读执行一个公开白名单任务。"""
+    task_id = str(task_id or "").strip()
+    if not task_id or task_id not in _public_demo_task_ids():
+        raise KeyError(f"任务 {task_id} 不在公开白名单")
+
+    adapter = FeishuOpenApiAdapter.from_env()
+    if adapter is None:
+        raise RuntimeError("飞书应用身份尚未配置")
+    semantic_reviewer = DeepSeekSemanticReviewer.from_env()
+    if semantic_reviewer is None:
+        raise RuntimeError("DeepSeek 语义复核尚未配置")
+
+    config = load_config()
+    products = adapter.list_records(
+        config["base_token"],
+        config["product_table"]["id"],
+    )
+    if len(products) != 1:
+        raise RuntimeError("演示 Base 的商品资料必须保持为一条")
+
+    fixture_path = PROJECT_ROOT / str(config["legacy_input_fixture"])
+    fixtures = load_fixture_inputs(fixture_path)
+    task_records = adapter.list_records(
+        config["base_token"],
+        config["task_table"]["id"],
+    )
+    selected = next(
+        (
+            (index, restore_legacy_input(task, fixtures))
+            for index, task in enumerate(task_records)
+            if scalar_cell_value(task.get("任务ID")) == task_id
+        ),
+        None,
+    )
+    if selected is None:
+        raise KeyError(f"没有找到任务 {task_id}")
+
+    index, task = selected
+    task_input = build_task_input(task, products[0])
+    rules = load_rules()
+    with tempfile.TemporaryDirectory(prefix="cha-cup-public-demo-") as temp_dir:
+        record = execute_task(
+            task_input,
+            Path(temp_dir),
+            index=index,
+            rules=rules,
+            source=config["url"],
+            semantic_reviewer=semantic_reviewer,
+        )
+
+    report = build_report([record], source=config["url"], rules=rules)
+    report["runtime"] = runtime_status()
+    report["execution_mode"] = "live_readonly"
+    report["writeback"] = False
+    report["feishu_sync"] = {
+        "base_name": config["name"],
+        "base_url": config["url"],
+        "records_read": len(products) + len(task_records),
+        "mode": "live_readonly",
+        "writeback": False,
+    }
+    return report
 
 
 def run_protected_task(task_id: str) -> Dict[str, Any]:

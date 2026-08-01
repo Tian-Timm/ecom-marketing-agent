@@ -35,6 +35,7 @@ from online_runtime import (
     image_token_belongs_to_demo_base,
     live_report,
     run_protected_pending,
+    run_public_demo_task,
     run_protected_task,
     runtime_status,
 )
@@ -432,13 +433,15 @@ def handle_demo_run(handler: Any) -> None:
                 _running_tasks.add(lock_key)
                 lock_acquired = True
 
-            report = run_protected_task(task_id)
+            report = run_public_demo_task(task_id)
             send_json(handler, {
                 "rules_version": report["rules_version"],
                 "pipeline_version": report["pipeline_version"],
                 "record": report["records"][0],
                 "summary": report["summary"],
                 "runtime": report["runtime"],
+                "execution_mode": report["execution_mode"],
+                "writeback": report["writeback"],
             })
             return
 
