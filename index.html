@@ -2111,7 +2111,11 @@
         <p class="brand-subtitle">营销素材合规审查与生成</p>
       </div>
     </div>
-    <div class="connection" id="connection-status">正在连接</div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="connection" id="mode-status">公开演示模式</span>
+      <button class="secondary" id="admin-mode-toggle" type="button" style="min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 999px;">管理员模式</button>
+      <div class="connection" id="connection-status">正在连接</div>
+    </div>
   </header>
 
   <main class="shell">
@@ -2156,8 +2160,8 @@
     </section>
 
     <section class="source-strip" aria-label="数据源状态">
-      <div class="source-cell">
-        <label class="source-label" for="source-select">数据源</label>
+      <div class="source-cell hidden" id="source-select-cell">
+        <label class="source-label" for="source-select">配置数据源</label>
         <select class="source-value" id="source-select"><option value="">演示快照（公开）</option></select>
       </div>
       <div class="source-cell">
@@ -2365,7 +2369,8 @@
       report: null,
       sourceId: "",
       sourceImageObjectUrl: "",
-      activeRevisions: {}
+      activeRevisions: {},
+      isAdminMode: false
     };
 
     const fields = {
@@ -2384,6 +2389,9 @@
     const taskList = document.getElementById("task-list");
     const resultContent = document.getElementById("result-content");
     const connectionStatus = document.getElementById("connection-status");
+    const modeStatus = document.getElementById("mode-status");
+    const adminModeToggle = document.getElementById("admin-mode-toggle");
+    const sourceSelectCell = document.getElementById("source-select-cell");
     const runtimeHint = document.getElementById("runtime-hint");
     const runButton = document.getElementById("run-button");
     const formActions = document.querySelector(".form-actions");
@@ -2495,23 +2503,36 @@
 
     function configureRuntimeUI(runtime) {
       const apiOnline = Boolean(runtime?.online);
-      const canExecute = Boolean(
+      const canExecutePublic = Boolean(runtime?.capabilities?.public_demo_run);
+      const canExecutePublicPending = Boolean(runtime?.capabilities?.public_demo_next_pending);
+      const canExecuteAdmin = Boolean(
         runtime?.capabilities?.feishu_write &&
         runtime?.capabilities?.semantic_review
       );
       state.apiOnline = apiOnline;
       state.demoMode = !apiOnline;
       state.runtime = runtime || null;
+
       const canConfigureSources = Boolean(runtime?.capabilities?.onboarding_write);
-      onboardingPanel.classList.toggle("hidden", !canConfigureSources && Boolean(runtime));
+      onboardingPanel.classList.toggle("hidden", !state.isAdminMode || !canConfigureSources);
+      sourceSelectCell.classList.toggle("hidden", !state.isAdminMode);
+      modeStatus.textContent = state.isAdminMode ? "管理员模式" : "公开演示模式";
+      adminModeToggle.textContent = state.isAdminMode ? "退出管理员模式" : "管理员模式";
+
       Object.values(fields).forEach((field) => {
         field.disabled = true;
       });
       formActions.classList.remove("hidden");
       newButton.classList.add("hidden");
+
+      const canExecute = state.sourceId ? (canExecuteAdmin && Boolean(state.adminToken)) : canExecutePublic;
+      const canPending = state.sourceId ? (canExecuteAdmin && Boolean(state.adminToken)) : canExecutePublicPending;
+
       runButton.disabled = !canExecute;
-      syncButton.classList.toggle("hidden", !canExecute);
-      syncButton.disabled = !canExecute;
+      syncButton.textContent = state.sourceId ? "处理待审查" : "演示处理下一条";
+      syncButton.classList.toggle("hidden", !canPending);
+      syncButton.disabled = !canPending;
+
       setText("source-mode", apiOnline ? "实时读取" : "线上快照");
       setText(
         "semantic-mode",
@@ -2528,17 +2549,21 @@
         inputPaneTitle.textContent = "飞书任务输入";
         inputPaneNote.textContent = "字段来自当前 Base 记录";
         demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
-        runtimeHint.textContent = canExecute
-          ? "选择任务后可使用管理员口令执行实时审查。"
-          : "当前开放实时读取，执行功能等待服务端配置完成。";
+        runtimeHint.textContent = state.isAdminMode
+          ? "当前处于管理员模式，可管理与执行配置化数据源。"
+          : canExecutePublic
+            ? "公开演示模式：选择任务后可直接免密执行固定演示任务与处理待审查。"
+            : "实时演示暂时关闭，可查看预置结果。";
       } else {
         connectionStatus.textContent = "在线案例演示";
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "案例输入快照";
         inputPaneNote.textContent = "查看预置案例的输入信息";
         demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
-        runtimeHint.textContent = "当前可浏览预置案例。选择任务后点击执行需要管理员口令。";
-        runButton.disabled = true;
+        runtimeHint.textContent = state.isAdminMode
+          ? "当前处于管理员模式。"
+          : "当前可浏览预置案例。";
+        runButton.disabled = !canExecutePublic;
       }
     }
 
@@ -2997,31 +3022,68 @@
     async function activateSource() { const sourceId = onboarding.sourceId.value.trim(); const data = await fetchJson("/api/activate", {method:"POST",headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken},body:JSON.stringify({source_id:sourceId,revision:onboarding.draftRevision,expected_active_revision:state.activeRevisions[sourceId] ?? null})}); await loadSources(); sourceSelect.value=data.source_id; state.sourceId=data.source_id; await loadRecords(); showToast("数据源已激活。"); }
 
     async function executeSelectedTask() {
-      if (!state.apiOnline) {
-        showToast("当前仅支持浏览预置案例。", true);
-        return;
-      }
       if (!state.selectedId) {
         showToast("请先选择一条飞书任务。", true);
         return;
       }
-      if (!state.adminToken) {
-        state.pendingAction = "run";
-        adminDialog.showModal();
-        adminTokenInput.focus();
+      if (state.sourceId) {
+        if (!state.adminToken) {
+          state.pendingAction = "run";
+          adminDialog.showModal();
+          adminTokenInput.focus();
+          return;
+        }
+        runButton.disabled = true;
+        runButton.textContent = "正在审查";
+        try {
+          const result = await fetchJson("/api/run", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Demo-Admin-Token": state.adminToken
+            },
+            body: JSON.stringify({task_id: state.selectedId, source_id: state.sourceId})
+          });
+          const record = result.record;
+          state.rulesVersion = result.rules_version || state.rulesVersion;
+          const index = state.records.findIndex((item) => item.task_id === record.task_id);
+          if (index >= 0) {
+            state.records[index] = record;
+          } else {
+            state.records.unshift(record);
+          }
+          state.selectedId = record.task_id;
+          updateMetrics();
+          renderTaskList();
+          setForm(record);
+          renderResult(record, true);
+          showToast({
+            PASSED: "审查通过，图片已生成。",
+            BLOCKED: "发现需要修改的内容，请查看审查结果。",
+            REVIEW_REQUIRED: "任务需要人工复核，未生成图片。",
+            FAILED: "任务执行失败，未生成图片。"
+          }[record.status] || "任务执行完成。", record.status === "FAILED");
+        } catch (error) {
+          if (error.status === 401) {
+            state.adminToken = "";
+          }
+          showToast(error.message || "执行失败，请稍后重试。", true);
+        } finally {
+          configureRuntimeUI(state.runtime);
+          runButton.textContent = "执行所选任务";
+        }
         return;
       }
 
       runButton.disabled = true;
       runButton.textContent = "正在审查";
       try {
-        const result = await fetchJson("/api/run", {
+        const result = await fetchJson("/api/demo_run", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            "X-Demo-Admin-Token": state.adminToken
+            "Content-Type": "application/json"
           },
-          body: JSON.stringify({task_id: state.selectedId, source_id: state.sourceId || undefined})
+          body: JSON.stringify({action: "run_task", task_id: state.selectedId})
         });
         const record = result.record;
         state.rulesVersion = result.rules_version || state.rulesVersion;
@@ -3043,57 +3105,79 @@
           FAILED: "任务执行失败，未生成图片。"
         }[record.status] || "任务执行完成。", record.status === "FAILED");
       } catch (error) {
-        if (error.status === 401) {
-          state.adminToken = "";
+        if (error.status === 429) {
+          showToast("体验次数较多，请稍后再试", true);
+        } else if (error.status === 409) {
+          showToast("任务正在处理中，请勿重复提交", true);
+        } else if (error.status === 503) {
+          showToast("实时演示暂时不可用，可查看已有结果", true);
+        } else if (error.status === 404) {
+          showToast("任务不在公开演示白名单中", true);
+        } else {
+          showToast(error.message || "执行失败，请稍后重试。", true);
         }
-        showToast(error.message || "执行失败，请稍后重试。", true);
       } finally {
-        const canExecute = Boolean(
-          state.runtime?.capabilities?.feishu_write &&
-          state.runtime?.capabilities?.semantic_review
-        );
-        runButton.disabled = !canExecute;
+        configureRuntimeUI(state.runtime);
         runButton.textContent = "执行所选任务";
       }
     }
 
     async function syncPendingTasks() {
-      if (!state.apiOnline) {
-        showToast("当前仅支持浏览预置案例。", true);
-        return;
-      }
-      if (!state.adminToken) {
-        state.pendingAction = "sync";
-        adminDialog.showModal();
-        adminTokenInput.focus();
+      if (state.sourceId) {
+        if (!state.adminToken) {
+          state.pendingAction = "sync";
+          adminDialog.showModal();
+          adminTokenInput.focus();
+          return;
+        }
+        syncButton.disabled = true;
+        syncButton.textContent = "正在处理";
+        try {
+          const result = await fetchJson("/api/sync", {
+            method: "POST",
+            headers: {"Content-Type": "application/json", "X-Demo-Admin-Token": state.adminToken},
+            body: JSON.stringify({source_id: state.sourceId})
+          });
+          const count = Number(result.batch?.processed || 0);
+          await loadRecords();
+          showToast(count
+            ? `已处理 ${count} 条待审查任务。`
+            : "当前没有待审查任务。");
+        } catch (error) {
+          if (error.status === 401) {
+            state.adminToken = "";
+          }
+          showToast(error.message || "同步失败，请稍后重试。", true);
+        } finally {
+          configureRuntimeUI(state.runtime);
+          syncButton.textContent = "处理待审查";
+        }
         return;
       }
 
       syncButton.disabled = true;
       syncButton.textContent = "正在处理";
       try {
-        const result = await fetchJson("/api/sync", {
+        await fetchJson("/api/demo_run", {
           method: "POST",
-          headers: {"Content-Type": "application/json", "X-Demo-Admin-Token": state.adminToken},
-          body: JSON.stringify({source_id: state.sourceId || undefined})
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({action: "run_next_pending"})
         });
-        const count = Number(result.batch?.processed || 0);
         await loadRecords();
-        showToast(count
-          ? `已处理 ${count} 条待审查任务。`
-          : "当前没有待审查任务。");
+        showToast("演示待审查任务处理完成。");
       } catch (error) {
-        if (error.status === 401) {
-          state.adminToken = "";
+        if (error.status === 429) {
+          showToast("体验次数较多，请稍后再试", true);
+        } else if (error.status === 409) {
+          showToast("任务正在处理中，请勿重复提交", true);
+        } else if (error.status === 503) {
+          showToast("实时演示暂时不可用，可查看已有结果", true);
+        } else {
+          showToast(error.message || "处理失败，请稍后重试。", true);
         }
-        showToast(error.message || "同步失败，请稍后重试。", true);
       } finally {
-        const canExecute = Boolean(
-          state.runtime?.capabilities?.feishu_write &&
-          state.runtime?.capabilities?.semantic_review
-        );
-        syncButton.disabled = !canExecute;
-        syncButton.textContent = "处理待审查";
+        configureRuntimeUI(state.runtime);
+        syncButton.textContent = "演示处理下一条";
       }
     }
 
@@ -3102,6 +3186,27 @@
       await executeSelectedTask();
     }
 
+    async function toggleAdminMode() {
+      if (state.isAdminMode) {
+        state.isAdminMode = false;
+        state.adminToken = "";
+        state.sourceId = "";
+        sourceSelect.value = "";
+        sourceSelectCell.classList.add("hidden");
+        onboardingPanel.classList.add("hidden");
+        modeStatus.textContent = "公开演示模式";
+        adminModeToggle.textContent = "管理员模式";
+        configureRuntimeUI(state.runtime);
+        await loadRecords();
+        showToast("已退出管理员模式。");
+      } else {
+        state.pendingAction = "admin_mode";
+        adminDialog.showModal();
+        adminTokenInput.focus();
+      }
+    }
+
+    adminModeToggle.addEventListener("click", toggleAdminMode);
     document.getElementById("task-form").addEventListener("submit", runTask);
     document.getElementById("new-button").addEventListener("click", newTask);
     document.getElementById("refresh-button").addEventListener("click", loadRecords);
@@ -3116,16 +3221,46 @@
     });
     document.getElementById("admin-form").addEventListener("submit", async (event) => {
       event.preventDefault();
-      state.adminToken = adminTokenInput.value;
+      const token = adminTokenInput.value.trim();
       adminTokenInput.value = "";
       adminDialog.close();
-      await loadSources();
-      if (state.pendingAction === "run") {
-        state.pendingAction = "";
-        await executeSelectedTask();
-      } else if (state.pendingAction === "sync") {
-        state.pendingAction = "";
-        await syncPendingTasks();
+      if (!token) return;
+      try {
+        const payload = await fetchJson("/api/sources", {
+          headers: {"X-Demo-Admin-Token": token}
+        });
+        state.adminToken = token;
+        state.isAdminMode = true;
+        state.activeRevisions = Object.fromEntries(
+          (payload.sources || [])
+            .filter((item) => item.health === "ACTIVE")
+            .map((item) => [item.source_id, item.active_revision])
+        );
+        sourceSelect.replaceChildren(new Option("演示快照（公开）", ""));
+        (payload.sources || []).filter((item) => item.health === "ACTIVE").forEach((item) => {
+          sourceSelect.add(new Option(`${item.display_name || item.source_id} / v${item.active_revision}`, item.source_id));
+        });
+        sourceSelectCell.classList.remove("hidden");
+        const canConfigureSources = Boolean(state.runtime?.capabilities?.onboarding_write);
+        onboardingPanel.classList.toggle("hidden", !canConfigureSources);
+        modeStatus.textContent = "管理员模式";
+        adminModeToggle.textContent = "退出管理员模式";
+        configureRuntimeUI(state.runtime);
+        showToast("已进入管理员模式。");
+
+        if (state.pendingAction === "run") {
+          state.pendingAction = "";
+          await executeSelectedTask();
+        } else if (state.pendingAction === "sync") {
+          state.pendingAction = "";
+          await syncPendingTasks();
+        } else {
+          state.pendingAction = "";
+        }
+      } catch (error) {
+        state.adminToken = "";
+        state.isAdminMode = false;
+        showToast("管理员口令验证失败。", true);
       }
     });
     demoCases.forEach((button) => {

@@ -165,5 +165,21 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertEqual(len(self.parser.ids), len(set(self.parser.ids)))
 
 
+    def test_dual_mode_frontend_security_and_boundaries(self) -> None:
+        self.assertIn("/api/demo_run", self.html)
+        self.assertIn('action: "run_task"', self.html)
+        self.assertIn('action: "run_next_pending"', self.html)
+        self.assertIn('id="mode-status"', self.html)
+        self.assertIn('id="admin-mode-toggle"', self.html)
+        self.assertIn('id="source-select-cell"', self.html)
+        self.assertIn('class="source-cell hidden"', self.html)
+        self.assertNotIn("localStorage", self.html)
+        self.assertNotIn("sessionStorage", self.html)
+        self.assertIn('state.adminToken = ""', self.html)
+        self.assertIn('state.sourceId = ""', self.html)
+        self.assertIn("公开演示模式", self.html)
+        self.assertIn("管理员模式", self.html)
+
+
 if __name__ == "__main__":
     unittest.main()

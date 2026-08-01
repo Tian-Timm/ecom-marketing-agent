@@ -47,9 +47,16 @@ from .source_composition import config_repository, resolve_feishu_credential
 MAX_BODY_BYTES = 8 * 1024
 RATE_WINDOW_SECONDS = 10 * 60
 RATE_LIMIT = 6
+PUBLIC_DEMO_RATE_WINDOW_DEFAULT = 600
+PUBLIC_DEMO_RATE_LIMIT_DEFAULT = 3
+FORBIDDEN_PUBLIC_KEYS = {
+    "source_id", "base_token", "base_url", "table_id",
+    "record_id", "credential_ref", "force",
+}
 TERMINAL_BASE_STATUSES = {"审查通过", "需修改", "待人工复核", "执行失败"}
 _state_lock = threading.Lock()
 _requests_by_ip: dict[str, list[float]] = {}
+_public_demo_requests_by_ip: dict[str, list[float]] = {}
 _running_tasks: set[str] = set()
 
 
@@ -57,13 +64,36 @@ class RequestConflictError(RuntimeError):
     """A client-request conflict that is safe to return as HTTP 409."""
 
 
-def send_json(handler: Any, payload: Any, status: HTTPStatus = HTTPStatus.OK) -> None:
+class RateLimitExceededError(RuntimeError):
+    """Public demo rate limit exceeded that should return HTTP 429."""
+
+    def __init__(self, retry_after: int = 600) -> None:
+        super().__init__("操作过于频繁，请稍后再试")
+        self.retry_after = retry_after
+
+
+class PublicDemoDisabledError(RuntimeError):
+    """Public demo is disabled on this instance."""
+
+    def __init__(self, message: str = "实时演示暂时不可用，可查看已有结果") -> None:
+        super().__init__(message)
+
+
+def send_json(
+    handler: Any,
+    payload: Any,
+    status: HTTPStatus = HTTPStatus.OK,
+    headers: dict[str, str] | None = None,
+) -> None:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     handler.send_response(status)
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(body)))
     handler.send_header("Cache-Control", "no-store")
     handler.send_header("X-Content-Type-Options", "nosniff")
+    if headers:
+        for k, v in headers.items():
+            handler.send_header(k, v)
     handler.end_headers()
     handler.wfile.write(body)
 
@@ -107,6 +137,89 @@ def _authorize_write(handler: Any) -> None:
         _requests_by_ip[client_ip] = recent
 
 
+def _is_public_demo_enabled() -> bool:
+    return os.environ.get("PUBLIC_DEMO_RUN_ENABLED", "").strip().lower() in ("true", "1")
+
+
+def _authorize_public_demo(handler: Any) -> None:
+    if not _is_public_demo_enabled():
+        raise PublicDemoDisabledError()
+
+    window = PUBLIC_DEMO_RATE_WINDOW_DEFAULT
+    try:
+        if "PUBLIC_DEMO_RATE_WINDOW_SECONDS" in os.environ:
+            val = int(os.environ["PUBLIC_DEMO_RATE_WINDOW_SECONDS"])
+            if val > 0:
+                window = val
+    except ValueError:
+        pass
+
+    limit = PUBLIC_DEMO_RATE_LIMIT_DEFAULT
+    try:
+        if "PUBLIC_DEMO_RATE_LIMIT" in os.environ:
+            val = int(os.environ["PUBLIC_DEMO_RATE_LIMIT"])
+            if val > 0:
+                limit = val
+    except ValueError:
+        pass
+
+    now = time.monotonic()
+    client_ip = _client_ip(handler)
+    with _state_lock:
+        recent = [
+            timestamp
+            for timestamp in _public_demo_requests_by_ip.get(client_ip, [])
+            if now - timestamp < window
+        ]
+        if len(recent) >= limit:
+            oldest = recent[0]
+            retry_after = max(1, int(window - (now - oldest)))
+            raise RateLimitExceededError(retry_after=retry_after)
+        recent.append(now)
+        _public_demo_requests_by_ip[client_ip] = recent
+
+
+def _get_public_demo_whitelist() -> set[str]:
+    raw_env = os.environ.get("PUBLIC_DEMO_TASK_IDS", "").strip()
+    if raw_env:
+        return {item.strip() for item in raw_env.split(",") if item.strip()}
+
+    snapshot_path = PROJECT_ROOT / "generated_output" / "pipeline_result.json"
+    if snapshot_path.exists():
+        try:
+            data = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            records = data.get("records", [])
+            ids = {str(r.get("task_id") or "").strip() for r in records if isinstance(r, dict)}
+            valid = {i for i in ids if i}
+            if valid:
+                return valid
+        except Exception:
+            pass
+
+    demo_base_cfg = (
+        PROJECT_ROOT
+        / ".agents"
+        / "skills"
+        / "simple-visual-compliance"
+        / "assets"
+        / "feishu_demo_base.json"
+    )
+    if demo_base_cfg.exists():
+        try:
+            cfg = json.loads(demo_base_cfg.read_text(encoding="utf-8"))
+            fixture_rel = cfg.get("legacy_input_fixture")
+            if fixture_rel:
+                fixture_path = PROJECT_ROOT / fixture_rel
+                if fixture_path.exists():
+                    from feishu_base_adapter import load_fixture_inputs
+                    fixtures = load_fixture_inputs(fixture_path)
+                    return {str(k).strip() for k in fixtures.keys() if str(k).strip()}
+        except Exception:
+            pass
+
+    return set()
+
+
 def _semantic_error(handler: Any, exc: Exception) -> None:
     """Return stable request errors without reflecting connector credentials."""
     if isinstance(exc, PermissionError):
@@ -117,6 +230,20 @@ def _semantic_error(handler: Any, exc: Exception) -> None:
         return
     if isinstance(exc, RequestConflictError):
         send_json(handler, {"error": str(exc)}, HTTPStatus.CONFLICT)
+        return
+    if isinstance(exc, RateLimitExceededError):
+        send_json(
+            handler,
+            {"error": str(exc)},
+            HTTPStatus.TOO_MANY_REQUESTS,
+            headers={"Retry-After": str(exc.retry_after)},
+        )
+        return
+    if isinstance(exc, PublicDemoDisabledError):
+        send_json(handler, {"error": str(exc)}, HTTPStatus.SERVICE_UNAVAILABLE)
+        return
+    if isinstance(exc, KeyError):
+        send_json(handler, {"error": "未找到指定演示任务"}, HTTPStatus.NOT_FOUND)
         return
     if isinstance(exc, SemanticLayerError):
         status = (
@@ -199,7 +326,12 @@ def handle_get(handler: Any, resource: str) -> None:
             status = runtime_status()
             _, persistence = config_repository()
             status["config_persistence"] = persistence.mode
-            status.setdefault("capabilities", {})["onboarding_write"] = persistence.mode == "persistent"
+            caps = status.setdefault("capabilities", {})
+            caps["onboarding_write"] = persistence.mode == "persistent"
+            public_demo_enabled = _is_public_demo_enabled()
+            has_deps = bool(caps.get("feishu_read") and caps.get("semantic_review"))
+            caps["public_demo_run"] = bool(public_demo_enabled and has_deps)
+            caps["public_demo_next_pending"] = bool(public_demo_enabled and has_deps)
             send_json(handler, status)
         elif resource == "tasks":
             from urllib.parse import parse_qs, urlparse
@@ -264,6 +396,76 @@ def handle_get(handler: Any, resource: str) -> None:
         send_json(handler, {"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
     except Exception as exc:
         _semantic_error(handler, exc)
+
+
+def handle_demo_run(handler: Any) -> None:
+    lock_key = ""
+    lock_acquired = False
+    try:
+        _authorize_public_demo(handler)
+        payload = _read_json(handler)
+
+        forbidden_keys = FORBIDDEN_PUBLIC_KEYS & set(payload.keys())
+        if forbidden_keys:
+            raise ValueError(f"请求包含非法或敏感字段: {', '.join(sorted(forbidden_keys))}")
+
+        action = str(payload.get("action") or "").strip()
+        if action not in ("run_task", "run_next_pending"):
+            raise ValueError("无效的 action 指令")
+
+        whitelist = _get_public_demo_whitelist()
+        if not whitelist:
+            raise PublicDemoDisabledError("公开演示暂无可用白名单任务")
+
+        if action == "run_task":
+            task_id = str(payload.get("task_id") or "").strip()
+            if not task_id or len(task_id) > 64:
+                raise ValueError("请提供有效的演示任务 ID")
+            if task_id not in whitelist:
+                raise KeyError(f"任务 {task_id} 不在公开白名单")
+
+            lock_key = f"public:task:{task_id}"
+            with _state_lock:
+                if lock_key in _running_tasks:
+                    raise RequestConflictError("该演示任务正在处理中，请勿重复提交")
+                _running_tasks.add(lock_key)
+                lock_acquired = True
+
+            report = run_protected_task(task_id)
+            send_json(handler, {
+                "rules_version": report["rules_version"],
+                "pipeline_version": report["pipeline_version"],
+                "record": report["records"][0],
+                "summary": report["summary"],
+                "runtime": report["runtime"],
+            })
+            return
+
+        elif action == "run_next_pending":
+            lock_key = "public:pending"
+            with _state_lock:
+                if lock_key in _running_tasks:
+                    raise RequestConflictError("待审查演示任务正在处理中，请勿重复提交")
+                _running_tasks.add(lock_key)
+                lock_acquired = True
+
+            report = run_protected_pending(limit=1)
+            send_json(handler, {
+                "rules_version": report["rules_version"],
+                "pipeline_version": report["pipeline_version"],
+                "records": [r for r in report.get("records", []) if r.get("task_id") in whitelist],
+                "summary": report.get("summary", {}),
+                "runtime": report.get("runtime", {}),
+                "batch": report.get("batch", {}),
+            })
+            return
+
+    except Exception as exc:
+        _semantic_error(handler, exc)
+    finally:
+        if lock_key and lock_acquired:
+            with _state_lock:
+                _running_tasks.discard(lock_key)
 
 
 def handle_run(handler: Any) -> None:
