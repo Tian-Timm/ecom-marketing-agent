@@ -2629,7 +2629,6 @@
     function configureRuntimeUI(runtime) {
       const apiOnline = Boolean(runtime?.online);
       const canExecutePublic = Boolean(runtime?.capabilities?.public_demo_run);
-      const canExecutePublicPending = Boolean(runtime?.capabilities?.public_demo_next_pending);
       const canExecuteAdmin = Boolean(
         runtime?.capabilities?.feishu_write &&
         runtime?.capabilities?.semantic_review
@@ -2655,10 +2654,10 @@
       const canExecute = state.sourceId
         ? (canExecuteAdmin && Boolean(state.adminToken))
         : (canExecutePublic || canPreviewPublic);
-      const canPending = state.sourceId ? (canExecuteAdmin && Boolean(state.adminToken)) : canExecutePublicPending;
+      const canPending = Boolean(state.sourceId && canExecuteAdmin && state.adminToken);
 
       runButton.disabled = !canExecute;
-      syncButton.textContent = state.sourceId ? "处理待审查" : "演示处理下一条";
+      syncButton.textContent = "处理待审查";
       syncButton.classList.toggle("hidden", !canPending);
       syncButton.disabled = !canPending;
 
@@ -3265,61 +3264,34 @@
     }
 
     async function syncPendingTasks() {
-      if (state.sourceId) {
-        if (!state.adminToken) {
-          state.pendingAction = "sync";
-          adminDialog.showModal();
-          adminTokenInput.focus();
-          return;
-        }
-        syncButton.disabled = true;
-        syncButton.textContent = "正在处理";
-        try {
-          const result = await fetchJson("/api/sync", {
-            method: "POST",
-            headers: {"Content-Type": "application/json", "X-Demo-Admin-Token": state.adminToken},
-            body: JSON.stringify({source_id: state.sourceId})
-          });
-          const count = Number(result.batch?.processed || 0);
-          await loadRecords();
-          showToast(count
-            ? `已处理 ${count} 条待审查任务。`
-            : "当前没有待审查任务。");
-        } catch (error) {
-          if (error.status === 401) {
-            state.adminToken = "";
-          }
-          showToast(error.message || "同步失败，请稍后重试。", true);
-        } finally {
-          configureRuntimeUI(state.runtime);
-          syncButton.textContent = "处理待审查";
-        }
+      if (!state.sourceId) return;
+      if (!state.adminToken) {
+        state.pendingAction = "sync";
+        adminDialog.showModal();
+        adminTokenInput.focus();
         return;
       }
-
       syncButton.disabled = true;
       syncButton.textContent = "正在处理";
       try {
-        await fetchJson("/api/demo_run", {
+        const result = await fetchJson("/api/sync", {
           method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({action: "run_next_pending"})
+          headers: {"Content-Type": "application/json", "X-Demo-Admin-Token": state.adminToken},
+          body: JSON.stringify({source_id: state.sourceId})
         });
+        const count = Number(result.batch?.processed || 0);
         await loadRecords();
-        showToast("演示待审查任务处理完成。");
+        showToast(count
+          ? `已处理 ${count} 条待审查任务。`
+          : "当前没有待审查任务。");
       } catch (error) {
-        if (error.status === 429) {
-          showToast("体验次数较多，请稍后再试", true);
-        } else if (error.status === 409) {
-          showToast("任务正在处理中，请勿重复提交", true);
-        } else if (error.status === 503) {
-          showToast("实时演示暂时不可用，可查看已有结果", true);
-        } else {
-          showToast(error.message || "处理失败，请稍后重试。", true);
+        if (error.status === 401) {
+          state.adminToken = "";
         }
+        showToast(error.message || "同步失败，请稍后重试。", true);
       } finally {
         configureRuntimeUI(state.runtime);
-        syncButton.textContent = "演示处理下一条";
+        syncButton.textContent = "处理待审查";
       }
     }
 

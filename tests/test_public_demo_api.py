@@ -4,6 +4,7 @@ import io
 import json
 import os
 import unittest
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 from src import web_api
@@ -107,25 +108,47 @@ class PublicDemoApiTests(unittest.TestCase):
             web_api.handle_demo_run(handler)
             self.assertEqual(handler.status, 503)
 
-    def test_run_next_pending_processes_at_most_one_task(self) -> None:
+    def test_public_run_next_pending_is_rejected(self) -> None:
         env = {
             "PUBLIC_DEMO_RUN_ENABLED": "true",
             "PUBLIC_DEMO_TASK_IDS": "MKT-001,MKT-002",
         }
-        mock_report = {
-            "rules_version": "1.0",
-            "pipeline_version": "1.0",
-            "records": [{"task_id": "MKT-001", "status": "PASSED"}],
-            "summary": {"total": 1},
-            "runtime": {"online": True},
-            "batch": {"processed": 1},
-        }
-        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_protected_pending", return_value=mock_report) as mock_pending:
+        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_protected_pending") as mock_pending:
             handler = FakeHandler(payload={"action": "run_next_pending"})
             web_api.handle_demo_run(handler)
 
-            self.assertEqual(handler.status, 200)
-            mock_pending.assert_called_once_with(limit=1)
+            self.assertEqual(handler.status, 400)
+            self.assertIn("不支持 run_next_pending", handler.json.get("error", ""))
+            mock_pending.assert_not_called()
+
+    def test_public_frontend_has_no_pending_task_execution(self) -> None:
+        index_html = (Path(__file__).parents[1] / "index.html").read_text(encoding="utf-8")
+
+        self.assertNotIn("演示处理下一条", index_html)
+        self.assertNotIn("run_next_pending", index_html)
+        self.assertNotIn("public_demo_next_pending", index_html)
+
+    def test_admin_sync_still_requires_token_and_processes_at_most_three_tasks(self) -> None:
+        env = {"DEMO_ADMIN_TOKEN": "secret-admin"}
+        mock_report = {
+            "rules_version": "1.0",
+            "pipeline_version": "1.0",
+            "records": [{"task_id": "MKT-001"}, {"task_id": "MKT-002"}, {"task_id": "MKT-003"}],
+            "summary": {"total": 3},
+            "runtime": {"online": True},
+            "batch": {"processed": 3},
+        }
+        with patch.dict(os.environ, env, clear=False), patch("src.web_api.run_protected_pending", return_value=mock_report) as mock_pending:
+            unauthorized = FakeHandler(payload={}, token=None, path="/api/sync")
+            web_api.handle_sync(unauthorized)
+            self.assertEqual(unauthorized.status, 401)
+
+            authorized = FakeHandler(payload={}, token="secret-admin", path="/api/sync")
+            web_api.handle_sync(authorized)
+
+        self.assertEqual(authorized.status, 200)
+        self.assertEqual(len(authorized.json["records"]), 3)
+        mock_pending.assert_called_once_with(limit=3)
 
     def test_public_rate_limit_exceeded_returns_429(self) -> None:
         env = {

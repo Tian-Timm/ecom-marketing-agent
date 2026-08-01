@@ -331,7 +331,6 @@ def handle_get(handler: Any, resource: str) -> None:
             public_demo_enabled = _is_public_demo_enabled()
             has_deps = bool(caps.get("feishu_read") and caps.get("semantic_review"))
             caps["public_demo_run"] = bool(public_demo_enabled and has_deps)
-            caps["public_demo_next_pending"] = bool(public_demo_enabled and has_deps)
             send_json(handler, status)
         elif resource == "tasks":
             from urllib.parse import parse_qs, urlparse
@@ -410,7 +409,9 @@ def handle_demo_run(handler: Any) -> None:
             raise ValueError(f"请求包含非法或敏感字段: {', '.join(sorted(forbidden_keys))}")
 
         action = str(payload.get("action") or "").strip()
-        if action not in ("run_task", "run_next_pending"):
+        if action == "run_next_pending":
+            raise ValueError("公开演示不支持 run_next_pending，请使用 action=run_task 并提供 task_id")
+        if action != "run_task":
             raise ValueError("无效的 action 指令")
 
         whitelist = _get_public_demo_whitelist()
@@ -438,25 +439,6 @@ def handle_demo_run(handler: Any) -> None:
                 "record": report["records"][0],
                 "summary": report["summary"],
                 "runtime": report["runtime"],
-            })
-            return
-
-        elif action == "run_next_pending":
-            lock_key = "public:pending"
-            with _state_lock:
-                if lock_key in _running_tasks:
-                    raise RequestConflictError("待审查演示任务正在处理中，请勿重复提交")
-                _running_tasks.add(lock_key)
-                lock_acquired = True
-
-            report = run_protected_pending(limit=1)
-            send_json(handler, {
-                "rules_version": report["rules_version"],
-                "pipeline_version": report["pipeline_version"],
-                "records": [r for r in report.get("records", []) if r.get("task_id") in whitelist],
-                "summary": report.get("summary", {}),
-                "runtime": report.get("runtime", {}),
-                "batch": report.get("batch", {}),
             })
             return
 
