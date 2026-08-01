@@ -92,8 +92,31 @@ class FrontendDemoContractTests(unittest.TestCase):
         mobile_css = self.html.split("@media (max-width: 640px)", 1)[1]
         self.assertIn(".demo-case-list", mobile_css)
         self.assertIn("repeat(2, minmax(0, 1fr))", mobile_css)
+        self.assertIn(".readonly-task-summary", mobile_css)
+        self.assertIn("grid-template-columns: 1fr", mobile_css)
         self.assertIn("在线案例演示", self.html)
-        self.assertIn("查看预置案例的输入信息", self.html)
+        self.assertIn("当前案例只读信息", self.html)
+        self.assertIn('id="readonly-task-summary"', self.html)
+        self.assertIn('id="editable-task-fields"', self.html)
+        for summary_id in (
+            "readonly-task-id",
+            "readonly-img-type",
+            "readonly-aspect-ratio",
+            "readonly-promo-price",
+            "readonly-min-price",
+            "readonly-deploy-date",
+            "readonly-campaign-start",
+            "readonly-campaign-end",
+            "readonly-main-text",
+            "readonly-sub-text",
+        ):
+            self.assertIn(f'id="{summary_id}"', self.html)
+        self.assertIn("summaryMoney", self.html)
+        self.assertIn("summaryDate", self.html)
+        self.assertIn("¥", self.html)
+        self.assertIn("updateReadonlySummary(record)", self.html)
+        self.assertIn('readonlyTaskSummary.classList.toggle("hidden", !showReadonlySummary)', self.html)
+        self.assertIn('editableTaskFields.classList.toggle("hidden", showReadonlySummary)', self.html)
         self.assertIn('fetchJson("/api/run"', self.html)
         self.assertIn("configureRuntimeUI(status)", self.html)
         self.assertIn("X-Demo-Admin-Token", self.html)
@@ -187,6 +210,8 @@ class FrontendDemoContractTests(unittest.TestCase):
             "demo-case-list",
             "input-pane-title",
             "input-pane-note",
+            "readonly-task-summary",
+            "editable-task-fields",
             "base-link",
             "semantic-mode",
             "last-sync",
