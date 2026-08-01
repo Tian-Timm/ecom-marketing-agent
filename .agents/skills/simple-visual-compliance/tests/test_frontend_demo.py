@@ -159,6 +159,27 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn("?v=${encodeURIComponent(assetVersion)}", self.html)
         self.assertIn("download.href = generatedImageUrl", self.html)
 
+    def test_workspace_prioritizes_result_panel_responsively(self) -> None:
+        self.assertIn(
+            "grid-template-columns: minmax(190px, 0.45fr) minmax(340px, 0.8fr) minmax(500px, 1.35fr);",
+            self.html,
+        )
+        tablet_css = self.html.split("@media (max-width: 1240px)", 1)[1].split(
+            "@media (max-width: 840px)", 1
+        )[0]
+        self.assertIn("grid-template-columns: 220px minmax(340px, 1fr);", tablet_css)
+        self.assertIn(".result-pane", tablet_css)
+        self.assertIn("grid-column: 1 / -1", tablet_css)
+
+        mobile_css = self.html.split("@media (max-width: 640px)", 1)[1]
+        self.assertIn("grid-template-columns: 1fr;", mobile_css)
+        self.assertIn(".preview", mobile_css)
+        self.assertIn("object-fit: contain", self.html)
+        self.assertIn("width: 100%", self.html)
+        self.assertIn("max-height: min(520px, 60vh)", self.html)
+        self.assertIn('details.open = false;', self.html)
+        self.assertIn('panel.open = false;', self.html)
+
     def test_demo_exposes_pipeline_and_feishu_delivery_evidence(self) -> None:
         self.assertEqual(self.report["schema_version"], "2.0")
         self.assertTrue(self.report["pipeline_version"])

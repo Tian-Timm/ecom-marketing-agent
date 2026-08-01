@@ -1099,7 +1099,7 @@
 
     .workspace {
       display: grid;
-      grid-template-columns: minmax(220px, 0.62fr) minmax(430px, 1.18fr) minmax(360px, 0.92fr);
+      grid-template-columns: minmax(190px, 0.45fr) minmax(340px, 0.8fr) minmax(500px, 1.35fr);
       min-height: calc(100dvh - 250px);
       overflow: hidden;
       border: 1px solid var(--line);
@@ -1633,7 +1633,7 @@
 
     .preview {
       display: grid;
-      min-height: 220px;
+      min-height: 260px;
       place-items: center;
       padding: 10px;
       overflow: hidden;
@@ -1644,8 +1644,9 @@
 
     .preview img {
       display: block;
+      width: 100%;
       max-width: 100%;
-      max-height: 410px;
+      max-height: min(520px, 60vh);
       border-radius: 3px;
       box-shadow: 0 8px 24px rgba(24, 24, 27, 0.12);
       object-fit: contain;
@@ -1828,7 +1829,7 @@
       }
 
       .workspace {
-        grid-template-columns: 230px minmax(420px, 1fr);
+        grid-template-columns: 220px minmax(340px, 1fr);
       }
 
       .result-pane {
@@ -2631,6 +2632,7 @@
       const wrapper = document.createElement("div");
       wrapper.className = "structured-result";
       const details = document.createElement("details");
+      details.open = false;
       const summary = document.createElement("summary");
       summary.textContent = "查看详细数据";
       const pre = document.createElement("pre");
@@ -2658,6 +2660,7 @@
     function buildExecutionTrace(record) {
       const panel = document.createElement("details");
       panel.className = "execution-panel";
+      panel.open = false;
       const summary = document.createElement("summary");
       summary.className = "execution-summary";
       const label = document.createElement("span");
