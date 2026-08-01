@@ -27,7 +27,7 @@ from assemble_image import assemble_batch, safe_task_id
 from semantic_review import DeepSeekSemanticReviewer
 
 SCHEMA_VERSION = "2.0"
-PIPELINE_VERSION = "2026-08-01.1"
+PIPELINE_VERSION = "2026-08-01.2"
 _AUTO_SEMANTIC_REVIEWER = object()
 
 

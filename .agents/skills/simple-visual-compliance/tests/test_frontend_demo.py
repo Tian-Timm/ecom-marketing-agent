@@ -109,12 +109,13 @@ class FrontendDemoContractTests(unittest.TestCase):
     def test_demo_exposes_pipeline_and_feishu_delivery_evidence(self) -> None:
         self.assertEqual(self.report["schema_version"], "2.0")
         self.assertTrue(self.report["pipeline_version"])
-        self.assertIn("/base/", self.report["source"])
+        self.assertEqual(self.report["execution_mode"], "static_snapshot")
+        self.assertFalse(self.report["writeback"])
         sync = self.report["feishu_sync"]
         self.assertEqual(sync["records_read"], 10)
-        self.assertIn(sync["records_written"], {0, 10})
-        self.assertIn(sync["images_uploaded"], {0, 4})
-        self.assertIn(sync["unchanged_skipped"], {0, 10})
+        self.assertEqual(sync["records_written"], 0)
+        self.assertEqual(sync["images_uploaded"], 0)
+        self.assertEqual(sync["unchanged_skipped"], 0)
         for record in self.report["records"]:
             self.assertTrue(record["input_hash"])
             self.assertGreaterEqual(record["duration_ms"], 0)
@@ -122,9 +123,9 @@ class FrontendDemoContractTests(unittest.TestCase):
                 step["name"]: step
                 for step in record["execution_trace"]
             }
-            self.assertEqual(steps["semantic_review"]["status"], "NOT_CONFIGURED")
-            self.assertIn(steps["delivery"]["status"], {"COMPLETED", "SKIPPED"})
-            self.assertIn(record["sync_status"], {"COMPLETED", "SKIPPED_UNCHANGED"})
+            self.assertEqual(steps["semantic_review"]["status"], "SKIPPED")
+            self.assertEqual(steps["delivery"]["status"], "SKIPPED")
+            self.assertNotIn("sync_status", record)
         self.assertIn("查看处理记录", self.html)
         self.assertIn("复制 JSON", self.html)
         self.assertIn("REVIEW_REQUIRED", self.html)
@@ -134,12 +135,12 @@ class FrontendDemoContractTests(unittest.TestCase):
         evidence_path = PROJECT_ROOT / "generated_output" / "public_evidence.json"
         self.assertTrue(evidence_path.exists())
         data = json.loads(evidence_path.read_text(encoding="utf-8"))
-        self.assertEqual(data["tests"]["passed"], 30)
-        self.assertEqual(data["tests"]["total"], 30)
+        self.assertEqual(data["tests"]["passed"], 85)
+        self.assertEqual(data["tests"]["total"], 85)
         self.assertEqual(data["evaluation"]["status_correct"], 10)
         self.assertEqual(data["evaluation"]["anomalies_detected"], 6)
-        self.assertEqual(data["e2e"]["passed_duration_seconds"], 10.68)
-        self.assertEqual(data["e2e"]["blocked_duration_seconds"], 6.28)
+        self.assertGreater(data["e2e"]["passed_duration_seconds"], 0)
+        self.assertGreater(data["e2e"]["blocked_duration_seconds"], 0)
         self.assertIn("10 条", data["sample_note"])
 
         content_str = json.dumps(data)
@@ -175,7 +176,7 @@ class FrontendDemoContractTests(unittest.TestCase):
     def test_dual_mode_frontend_security_and_boundaries(self) -> None:
         self.assertIn("/api/demo_run", self.html)
         self.assertIn('action: "run_task"', self.html)
-        self.assertIn('action: "run_next_pending"', self.html)
+        self.assertNotIn('action: "run_next_pending"', self.html)
         self.assertIn('id="mode-status"', self.html)
         self.assertIn('id="admin-mode-toggle"', self.html)
         self.assertIn('id="datasource-access-button"', self.html)

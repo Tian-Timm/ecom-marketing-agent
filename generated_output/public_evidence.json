@@ -1,23 +1,41 @@
 {
-  "updated_at": "2026-07-31T00:00:00+08:00",
-  "git_commit": "0ead8ef",
-  "pipeline_version": "2026-07-31.2",
+  "updated_at": "2026-08-01T09:49:58+00:00",
+  "git_commit": "707190f",
+  "pipeline_version": "2026-08-01.2",
+  "rules_version": "2026-07-30.1",
   "tests": {
-    "passed": 30,
-    "total": 30
+    "passed": 85,
+    "total": 85,
+    "suites": {
+      "root": {
+        "passed": 49,
+        "total": 49
+      },
+      "simple_visual_compliance": {
+        "passed": 36,
+        "total": 36
+      }
+    }
   },
   "evaluation": {
     "status_correct": 10,
     "status_total": 10,
+    "status_accuracy": 1.0,
     "anomalies_detected": 6,
     "anomalies_total": 6,
+    "anomaly_detection_rate": 1.0,
     "rule_codes_correct": 10,
-    "rule_codes_total": 10
+    "rule_codes_total": 10,
+    "rule_code_match_rate": 1.0
   },
   "e2e": {
-    "passed_duration_seconds": 10.68,
-    "blocked_duration_seconds": 6.28,
-    "idempotency": "SKIPPED_UNCHANGED"
+    "mode": "static_snapshot",
+    "passed_duration_seconds": 1.122,
+    "blocked_duration_seconds": 0.008,
+    "idempotency": {
+      "admin": "SKIPPED_UNCHANGED",
+      "public": "REEXECUTES_EVERY_TIME"
+    }
   },
-  "sample_note": "基于 10 条定向项目评测集，其中 6 条为边界异常任务；最近更新见处理版本。"
+  "sample_note": "基于 10 条定向项目评测集，其中 6 条为边界异常任务。本文件记录静态快照；公开实时运行会重新读取固定 Base、执行规则和 DeepSeek，且不会上传或回写飞书。"
 }
