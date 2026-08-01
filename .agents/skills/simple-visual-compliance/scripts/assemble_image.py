@@ -42,10 +42,10 @@ def safe_task_id(value: Any) -> str:
     safe = re.sub(r"[^A-Za-z0-9_-]+", "_", task_id).strip("_")
     return safe or "TASK-000"
 
-def require_assets() -> None:
+def require_assets(product_path: Path = PRODUCT_IMG_PATH, logo_path: Path = LOGO_IMG_PATH) -> None:
     missing = [
         str(path)
-        for path in (PRODUCT_IMG_PATH, LOGO_IMG_PATH, STAND_BG_PATH)
+        for path in (product_path, logo_path, STAND_BG_PATH)
         if not path.exists()
     ]
     if missing:
@@ -97,17 +97,19 @@ def assemble_single_image(rec: Dict[str, Any], output_dir: Path) -> Dict[str, An
     if rec.get("promo_price") in (None, ""):
         raise ValueError("组装图片前必须提供活动价")
 
-    require_assets()
+    product_path = Path(str(rec.get("product_image_path") or PRODUCT_IMG_PATH))
+    logo_path = Path(str(rec.get("logo_image_path") or LOGO_IMG_PATH))
+    require_assets(product_path, logo_path)
     width, height = ALLOWED_RATIOS[aspect_ratio]
     canvas = Image.open(STAND_BG_PATH).convert("RGBA").resize((width, height))
 
-    logo = Image.open(LOGO_IMG_PATH).convert("RGBA")
+    logo = Image.open(logo_path).convert("RGBA")
     logo_w = 120 if width == 600 else 140
     logo_h = int(logo.height * (logo_w / logo.width))
     logo = logo.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
     canvas.paste(logo, (24, 24), logo)
 
-    prod = Image.open(PRODUCT_IMG_PATH).convert("RGBA")
+    prod = Image.open(product_path).convert("RGBA")
     prod_h = 400 if width == 600 else 440
     prod_w = int(prod.width * (prod_h / prod.height))
     prod = prod.resize((prod_w, prod_h), Image.Resampling.LANCZOS)

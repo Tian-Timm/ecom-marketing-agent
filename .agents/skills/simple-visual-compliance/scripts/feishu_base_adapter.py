@@ -218,6 +218,37 @@ class LarkCliAdapter:
         ])
         return records_from_envelope(payload)
 
+    def list_tables(self, base_token: str) -> Dict[str, Any]:
+        """Read-only table metadata used by the configurable-source onboarding flow."""
+        payload = self.run([
+            "base", "+table-list", "--base-token", base_token,
+            "--format", "json", "--as", "user",
+        ])
+        if bool((payload.get("data") or {}).get("has_more")):
+            raise RuntimeError("飞书表元数据未完整返回，当前发现流程拒绝继续")
+        return payload
+
+    def list_fields(self, base_token: str, table_id: str) -> Dict[str, Any]:
+        """Read-only field metadata used by the configurable-source onboarding flow."""
+        payload = self.run([
+            "base", "+field-list", "--base-token", base_token,
+            "--table-id", table_id, "--format", "json", "--as", "user",
+        ])
+        if bool((payload.get("data") or {}).get("has_more")):
+            raise RuntimeError("飞书字段元数据未完整返回，当前发现流程拒绝继续")
+        return payload
+
+    def list_records_sample(
+        self, base_token: str, table_id: str, limit: int
+    ) -> List[Dict[str, Any]]:
+        """Use the existing record-list seam, capped for discovery and dry-run only."""
+        payload = self.run([
+            "base", "+record-list", "--base-token", base_token,
+            "--table-id", table_id, "--limit", str(max(1, min(int(limit), 20))),
+            "--format", "json", "--as", "user",
+        ])
+        return records_from_envelope(payload)
+
     def upload_image(self, file_path: Path, task_id: str) -> str:
         relative = file_path.resolve().relative_to(self.project_root.resolve())
         payload = self.run([

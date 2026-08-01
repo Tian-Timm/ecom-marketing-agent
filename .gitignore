@@ -17,3 +17,4 @@ __pycache__/
 # 4. 本地测试与中间渲染产物
 output_images/
 generated_output/feishu_dry_run_result.json
+runtime/source_configs/

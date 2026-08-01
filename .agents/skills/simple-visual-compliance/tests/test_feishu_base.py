@@ -11,6 +11,7 @@ SCRIPTS_DIR = SKILL_DIR / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 from feishu_base_adapter import (
+    LarkCliAdapter,
     build_task_input,
     records_from_envelope,
     restore_legacy_input,
@@ -20,6 +21,16 @@ from feishu_base_adapter import (
 
 
 class FeishuBaseAdapterTests(unittest.TestCase):
+    def test_cli_metadata_rejects_incomplete_pages(self) -> None:
+        class PagingCli(LarkCliAdapter):
+            def run(self, args):
+                return {"ok": True, "data": {"items": [], "has_more": True}}
+
+        with self.assertRaisesRegex(RuntimeError, "未完整返回"):
+            PagingCli().list_tables("base")
+        with self.assertRaisesRegex(RuntimeError, "未完整返回"):
+            PagingCli().list_fields("base", "table")
+
     def test_single_select_cell_is_normalized_for_idempotency(self):
         self.assertEqual(scalar_cell_value(["审查通过"]), "审查通过")
         self.assertEqual(scalar_cell_value("70ef6671"), "70ef6671")

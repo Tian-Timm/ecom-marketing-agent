@@ -158,6 +158,44 @@ class FeishuOpenApiAdapter:
                 raise FeishuOpenApiError("飞书分页响应缺少 page_token")
         return records
 
+    def list_tables(self, base_token: str) -> List[Dict[str, Any]]:
+        """Read table metadata for onboarding discovery; no mutation is performed."""
+        return self._list_metadata_pages(f"/bitable/v1/apps/{base_token}/tables")
+
+    def list_fields(self, base_token: str, table_id: str) -> List[Dict[str, Any]]:
+        """Read field IDs, names and types for onboarding discovery."""
+        return self._list_metadata_pages(
+            f"/bitable/v1/apps/{base_token}/tables/{table_id}/fields"
+        )
+
+    def _list_metadata_pages(self, path: str) -> List[Dict[str, Any]]:
+        """Collect every metadata page or fail instead of treating a page as complete."""
+        items: List[Dict[str, Any]] = []
+        page_token = ""
+        while True:
+            query: Dict[str, Any] = {"page_size": 100}
+            if page_token:
+                query["page_token"] = page_token
+            payload = self._json_request("GET", path, query=query)
+            data = payload.get("data") or {}
+            items.extend(item for item in data.get("items") or [] if isinstance(item, dict))
+            if not data.get("has_more"):
+                return items
+            page_token = str(data.get("page_token") or "")
+            if not page_token:
+                raise FeishuOpenApiError("飞书元数据分页响应缺少 page_token，拒绝使用不完整结果")
+
+    def list_records_sample(
+        self, base_token: str, table_id: str, limit: int
+    ) -> List[Dict[str, Any]]:
+        """Read at most ``limit`` records for confirmation validation."""
+        payload = self._json_request(
+            "GET",
+            f"/bitable/v1/apps/{base_token}/tables/{table_id}/records",
+            query={"page_size": max(1, min(int(limit), 20))},
+        )
+        return list((payload.get("data") or {}).get("items") or [])
+
     @staticmethod
     def _multipart_body(fields: Dict[str, str], file_path: Path) -> tuple[bytes, str]:
         boundary = f"----cha-cup-{uuid.uuid4().hex}"
@@ -185,14 +223,21 @@ class FeishuOpenApiAdapter:
         return b"".join(chunks), boundary
 
     def upload_image(self, file_path: Path, task_id: str) -> Dict[str, Any]:
+        return self.upload_image_for_base(
+            file_path,
+            task_id,
+            os.environ.get("FEISHU_BASE_TOKEN", "SfsSb7Tw2aeiQJsmQTlczjX7nyN"),
+        )
+
+    def upload_image_for_base(
+        self, file_path: Path, task_id: str, base_token: str
+    ) -> Dict[str, Any]:
+        """Upload against an explicit Base parent for configurable data sources."""
         body, boundary = self._multipart_body(
             {
                 "file_name": f"CHA CUP {task_id} 营销图片.png",
                 "parent_type": "bitable_file",
-                "parent_node": os.environ.get(
-                    "FEISHU_BASE_TOKEN",
-                    "SfsSb7Tw2aeiQJsmQTlczjX7nyN",
-                ),
+                "parent_node": base_token,
                 "size": str(file_path.stat().st_size),
             },
             file_path,

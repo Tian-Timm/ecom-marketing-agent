@@ -27,7 +27,7 @@ from assemble_image import assemble_batch, safe_task_id
 from semantic_review import DeepSeekSemanticReviewer
 
 SCHEMA_VERSION = "2.0"
-PIPELINE_VERSION = "2026-07-31.2"
+PIPELINE_VERSION = "2026-08-01.1"
 _AUTO_SEMANTIC_REVIEWER = object()
 
 
@@ -94,6 +94,11 @@ def execute_task(
         step_started_at = _utc_now()
         step_counter = perf_counter()
         record = sanitize_record(raw_record, index)
+        # Configured-source orchestration may provide already-resolved local
+        # material paths. They are explicit renderer inputs, not aliased fields.
+        for material_key in ("product_image_path", "logo_image_path"):
+            if raw_record.get(material_key):
+                record[material_key] = str(raw_record[material_key])
         input_hash = _input_hash(record)
         trace.append(_trace_step(
             "normalize",

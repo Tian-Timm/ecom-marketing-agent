@@ -76,6 +76,24 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertNotIn("FEISHU_APP_SECRET", self.html)
         self.assertNotIn("const forbiddenWords", self.html)
 
+    def test_configurable_source_onboarding_is_dynamic_and_keeps_legacy_fallback(self) -> None:
+        # Every field of the selected table remains manually selectable; discovery
+        # recommendations merely move confidence-labelled options to the top.
+        self.assertIn("tableFields.filter((field) => !recommended.has(field.field_id))", self.html)
+        self.assertIn("未推荐/需人工确认", self.html)
+        self.assertIn("candidate.confidence === \"LOW\"", self.html)
+        # Output fields have no independent table picker: they are refreshed from
+        # the selected task table before confirm.
+        self.assertIn("groups.writeback.dataset.tableId = table.value", self.html)
+        self.assertIn("writeback_table_id: writeback.dataset.tableId", self.html)
+        self.assertNotIn('table.dataset.tableRole = "writeback"', self.html)
+        for endpoint in ("/api/discover", "/api/confirm", "/api/activate"):
+            self.assertIn(endpoint, self.html)
+        self.assertIn('fetch(record.source_image_url, {headers: {"X-Demo-Admin-Token": state.adminToken}})', self.html)
+        self.assertIn('state.sourceId ? `/api/tasks?source_id=', self.html)
+        onboarding = self.html.split('id="onboarding-panel"', 1)[1].split("</section>", 1)[0]
+        self.assertNotIn("secret", onboarding.lower())
+
     def test_generated_images_use_the_pipeline_version_to_avoid_stale_cache(self) -> None:
         self.assertIn("state.report?.generated_at || state.rulesVersion", self.html)
         self.assertIn("?v=${encodeURIComponent(assetVersion)}", self.html)

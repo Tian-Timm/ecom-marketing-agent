@@ -17,7 +17,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(SCRIPTS_DIR))
 sys.path.insert(0, str(STANDARDIZER_DIR))
 
-from feishu_openapi_adapter import FeishuOpenApiAdapter
+from feishu_openapi_adapter import FeishuOpenApiAdapter, FeishuOpenApiError
 from online_runtime import image_token_belongs_to_demo_base, live_report
 from src import web_api
 
@@ -93,6 +93,16 @@ class OnlineApiTests(unittest.TestCase):
                 web_api._authorize_write(FakeHandler("wrong"))
             web_api._authorize_write(FakeHandler("correct"))
 
+    def test_configured_source_reads_require_admin_but_do_not_consume_write_quota(self) -> None:
+        """Polling configured-source data must not exhaust the mutation limiter."""
+        with patch.dict(os.environ, {"DEMO_ADMIN_TOKEN": "correct"}, clear=False):
+            for _ in range(web_api.RATE_LIMIT + 2):
+                web_api._authorize_admin(FakeHandler("correct"))
+            for _ in range(web_api.RATE_LIMIT):
+                web_api._authorize_write(FakeHandler("correct"))
+            with self.assertRaises(RuntimeError):
+                web_api._authorize_write(FakeHandler("correct"))
+
     def test_live_report_maps_fixed_base_records(self) -> None:
         adapter = RecordingOpenApiAdapter()
         original = adapter.list_records
@@ -138,6 +148,26 @@ class OnlineApiTests(unittest.TestCase):
         self.assertIn(b"base-token", body)
         self.assertIn(b"sample", body)
         self.assertTrue(content_type_boundary.startswith("----cha-cup-"))
+
+    def test_metadata_pagination_collects_every_page_and_rejects_missing_token(self) -> None:
+        class PagingAdapter(FeishuOpenApiAdapter):
+            def __init__(self, *, missing_token: bool = False) -> None:
+                super().__init__("app-id", "app-secret")
+                self.queries: list[dict | None] = []
+                self.missing_token = missing_token
+
+            def _json_request(self, method, path, *, body=None, query=None):
+                self.queries.append(query)
+                if len(self.queries) == 1:
+                    return {"data": {"items": [{"table_id": "tbl_1"}], "has_more": True,
+                                      "page_token": "" if self.missing_token else "next"}}
+                return {"data": {"items": [{"table_id": "tbl_2"}], "has_more": False}}
+
+        adapter = PagingAdapter()
+        self.assertEqual([item["table_id"] for item in adapter.list_tables("base")], ["tbl_1", "tbl_2"])
+        self.assertEqual(adapter.queries[1]["page_token"], "next")
+        with self.assertRaises(FeishuOpenApiError):
+            PagingAdapter(missing_token=True).list_fields("base", "tbl")
 
     def test_image_proxy_only_accepts_fixed_base_attachment(self) -> None:
         adapter = RecordingOpenApiAdapter()

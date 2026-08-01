@@ -29,7 +29,7 @@ CSV 可以使用对应的中文表头，数据规范化 Skill 会统一字段。
 
 ## 核心工作流
 
-1. 从 CSV、JSON 或固定演示飞书多维表格读取任务；使用 `dataset-standardizer` 规范化文件输入。
+1. 从 CSV、JSON、固定演示飞书多维表格或已激活配置化飞书数据源读取任务；文件输入使用 `dataset-standardizer` 规范化。配置化飞书正式运行必须使用 `ACTIVE SourceConfig` 与 `source_id + task_id` 精确读取，严格转换商品和任务字段，不允许回退到默认商品或默认关键字段。
 2. 读取唯一规则文件，运行 `audit_text.py`。
 3. 确定性规则通过后，使用 DeepSeek 复核广告语义、产品外观修改要求和含混指令；模型不可用或结论不稳定时进入人工复核，不得默认放行。
 4. 若状态为 `BLOCKED`，输出结构化违规项，禁止出图。
@@ -68,13 +68,15 @@ python main.py --feishu --dry-run
 
 ## 线上工作台
 
-线上接口使用固定的演示 Base，不接受客户端传入其他 Base 标识：
+线上接口保留固定演示 Base 的 legacy 路径，同时支持管理员接入已确认的数据源：
 
 - `GET /api/status`：查看当前数据源与能力状态。
 - `GET /api/tasks`：读取飞书任务；未配置应用身份时返回仓库内演示快照。
 - `POST /api/run`：受口令保护，仅处理用户选中的一条任务。
 - `POST /api/sync`：受口令保护，每次最多处理 3 条待审查任务，不强制重跑历史任务。
 - `GET /api/image`：代理读取已回写到 Base 的图片附件。
+
+配置化数据源的首次接入为 `POST /api/discover` ➔ `POST /api/confirm`（保存 DRAFT 且执行只读 dry-run）➔ `POST /api/activate`；`GET /api/sources` 仅返回安全的活动源摘要。携带 `source_id` 的任务、运行和图片读取均需管理员口令。发现阶段只读，正式运行只通过 ACTIVE 配置及其回执精确回写。
 
 线上运行需要在部署平台配置 `FEISHU_APP_ID`、`FEISHU_APP_SECRET`、`DEEPSEEK_API_KEY` 和 `DEMO_ADMIN_TOKEN`。执行口令只保存在浏览器当前页面的内存中，不写入仓库或本地存储。
 

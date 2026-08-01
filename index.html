@@ -2157,6 +2157,10 @@
 
     <section class="source-strip" aria-label="数据源状态">
       <div class="source-cell">
+        <label class="source-label" for="source-select">数据源</label>
+        <select class="source-value" id="source-select"><option value="">演示快照（公开）</option></select>
+      </div>
+      <div class="source-cell">
         <span class="source-label">数据来源</span>
         <span class="source-value"><a id="base-link" href="https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN" target="_blank" rel="noreferrer">飞书多维表格</a></span>
       </div>
@@ -2172,6 +2176,23 @@
         <span class="source-label">数据更新时间</span>
         <span class="source-value" id="last-sync">正在读取</span>
       </div>
+    </section>
+
+    <section class="demo-bar" id="onboarding-panel" aria-labelledby="onboarding-heading">
+      <div class="demo-heading">
+        <h2 id="onboarding-heading">接入数据源</h2>
+        <p>管理员口令模式下：Base 信息 → 发现字段与低置信度候选 → 确认映射与 dry-run → 显式激活。凭据仅填写受限 credential_ref，不输入密钥。</p>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label for="onboarding-source-id">source_id</label><input id="onboarding-source-id" placeholder="cha_cup_cn"></div>
+        <div class="field"><label for="onboarding-display-name">display_name</label><input id="onboarding-display-name" placeholder="CHA CUP 国内营销"></div>
+        <div class="field"><label for="onboarding-base">Base URL 或 token</label><input id="onboarding-base"></div>
+        <div class="field"><label for="onboarding-credential">credential_ref</label><input id="onboarding-credential" value="FEISHU_PRIMARY_APP"></div>
+        <div class="field"><label for="onboarding-revision">revision</label><input id="onboarding-revision" type="number" min="1" value="1"></div>
+        <div class="field"><label for="onboarding-reference">商品关联方式</label><select id="onboarding-reference"><option value="AUTO">自动（按字段类型）</option><option value="DIRECT_VALUE">商品 ID 文本/数字</option><option value="LINKED_RECORD">关联记录</option></select></div>
+      </div>
+      <div class="form-actions"><button class="secondary" id="discover-button" type="button">1. 发现表与字段</button><button class="secondary" id="confirm-button" type="button" disabled>2. 确认并 dry-run</button><button class="primary" id="activate-button" type="button" disabled>3. 显式激活</button></div>
+      <div id="mapping-wizard" class="task-list"><div class="empty">发现结果将在这里生成动态表选择与字段映射；LOW 候选会高亮，必须人工确认。</div></div>
     </section>
 
     <section class="demo-bar" aria-labelledby="demo-heading">
@@ -2341,7 +2362,10 @@
       adminToken: "",
       pendingAction: "",
       rulesVersion: "未知",
-      report: null
+      report: null,
+      sourceId: "",
+      sourceImageObjectUrl: "",
+      activeRevisions: {}
     };
 
     const fields = {
@@ -2372,6 +2396,13 @@
     const adminTokenInput = document.getElementById("admin-token");
     const newButton = document.getElementById("new-button");
     const syncButton = document.getElementById("sync-button");
+    const sourceSelect = document.getElementById("source-select");
+    const wizard = document.getElementById("mapping-wizard");
+    const discoverButton = document.getElementById("discover-button");
+    const confirmButton = document.getElementById("confirm-button");
+    const activateButton = document.getElementById("activate-button");
+    const onboardingPanel = document.getElementById("onboarding-panel");
+    const onboarding = {sourceId: document.getElementById("onboarding-source-id"), displayName: document.getElementById("onboarding-display-name"), base: document.getElementById("onboarding-base"), credential: document.getElementById("onboarding-credential"), revision: document.getElementById("onboarding-revision"), reference: document.getElementById("onboarding-reference"), snapshot: null, draftRevision: null};
 
     function setText(id, value) {
       document.getElementById(id).textContent = String(value ?? "");
@@ -2471,6 +2502,8 @@
       state.apiOnline = apiOnline;
       state.demoMode = !apiOnline;
       state.runtime = runtime || null;
+      const canConfigureSources = Boolean(runtime?.capabilities?.onboarding_write);
+      onboardingPanel.classList.toggle("hidden", !canConfigureSources && Boolean(runtime));
       Object.values(fields).forEach((field) => {
         field.disabled = true;
       });
@@ -2617,6 +2650,7 @@
     }
 
     function renderResult(record, cacheBust = false) {
+      if (state.sourceImageObjectUrl) { URL.revokeObjectURL(state.sourceImageObjectUrl); state.sourceImageObjectUrl = ""; }
       resultContent.replaceChildren();
       if (!record) {
         const empty = document.createElement("div");
@@ -2678,7 +2712,7 @@
       const preview = document.createElement("div");
       preview.className = "preview";
       let generatedImageUrl = "";
-      if (record.status === "PASSED" && record.generated_image) {
+      if (record.status === "PASSED" && (record.generated_image || record.source_image_url)) {
         const image = document.createElement("img");
         const assetVersion = cacheBust
           ? Date.now()
@@ -2686,10 +2720,17 @@
         const suffix = assetVersion
           ? `?v=${encodeURIComponent(assetVersion)}`
           : "";
-        generatedImageUrl = record.generated_image_url
-          ? `${record.generated_image_url}${record.generated_image_url.includes("?") ? "&" : "?"}v=${encodeURIComponent(assetVersion || "")}`
-          : `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
-        image.src = generatedImageUrl;
+        generatedImageUrl = record.source_image_url
+          ? ""
+          : record.generated_image_url
+            ? `${record.generated_image_url}${record.generated_image_url.includes("?") ? "&" : "?"}v=${encodeURIComponent(assetVersion || "")}`
+            : `generated_output/${encodeURIComponent(record.generated_image)}${suffix}`;
+        if (record.source_image_url && state.adminToken) {
+          fetch(record.source_image_url, {headers: {"X-Demo-Admin-Token": state.adminToken}})
+            .then((response) => { if (!response.ok) throw new Error("图片读取失败"); return response.blob(); })
+            .then((blob) => { state.sourceImageObjectUrl = URL.createObjectURL(blob); image.src = state.sourceImageObjectUrl; })
+            .catch(() => image.dispatchEvent(new Event("error")));
+        } else image.src = generatedImageUrl;
         image.alt = `${record.task_id} 生成的营销图片`;
         image.addEventListener("error", () => {
           preview.replaceChildren();
@@ -2712,7 +2753,7 @@
 
       resultContent.append(summary);
       resultContent.append(preview);
-      if (record.status === "PASSED" && record.generated_image) {
+      if (record.status === "PASSED" && (record.generated_image || record.source_image_url) && !record.source_image_url) {
         const download = document.createElement("a");
         download.className = "download";
         download.href = generatedImageUrl;
@@ -2822,7 +2863,7 @@
 
       try {
         const payload = state.apiOnline
-          ? await fetchJson("/api/tasks")
+          ? await fetchJson(state.sourceId ? `/api/tasks?source_id=${encodeURIComponent(state.sourceId)}` : "/api/tasks", state.sourceId ? {headers: {"X-Demo-Admin-Token": state.adminToken}} : {})
           : await fetchJson("generated_output/pipeline_result.json");
         const report = normalizeReport(payload);
         state.report = report;
@@ -2862,6 +2903,99 @@
       }
     }
 
+    async function loadSources() {
+      if (!state.adminToken) return;
+      try {
+        const payload = await fetchJson("/api/sources", {headers: {"X-Demo-Admin-Token": state.adminToken}});
+        const current = state.sourceId;
+        state.activeRevisions = Object.fromEntries((payload.sources || [])
+          .filter((item) => item.health === "ACTIVE")
+          .map((item) => [item.source_id, item.active_revision]));
+        sourceSelect.replaceChildren(new Option("演示快照（公开）", ""));
+        (payload.sources || []).filter((item) => item.health === "ACTIVE").forEach((item) => {
+          sourceSelect.add(new Option(`${item.display_name || item.source_id} / v${item.active_revision}`, item.source_id));
+        });
+        sourceSelect.value = current;
+      } catch (error) {
+        showToast("配置数据源不可见：需要管理员口令与可用配置。", true);
+      }
+    }
+
+    function mappingField(semantic, tableFields, candidates, required = true) {
+      const label = document.createElement("label"); label.textContent = `${semantic}${required ? " *" : ""}`;
+      const select = document.createElement("select"); select.dataset.semantic = semantic;
+      select.append(new Option("请选择字段", ""));
+      const recommended = new Map(candidates.map((candidate) => [candidate.field_id, candidate]));
+      candidates.forEach((candidate) => {
+        const option = new Option(`${candidate.field_name} [${candidate.confidence}]${candidate.confidence === "LOW" ? " ⚠" : ""}`, candidate.field_id);
+        option.dataset.reason = candidate.reasons.join("；"); option.dataset.confidence = candidate.confidence;
+        select.append(option);
+      });
+      tableFields.filter((field) => !recommended.has(field.field_id)).forEach((field) => {
+        const option = new Option(`${field.name} [未推荐/需人工确认]`, field.field_id);
+        option.dataset.manualOption = "true";
+        select.append(option);
+      });
+      const hint = document.createElement("small");
+      const refreshHint = () => {
+        const candidate = recommended.get(select.value);
+        hint.textContent = candidate
+          ? `${candidate.confidence}: ${candidate.reasons.join("；")}`
+          : select.value ? "未推荐/需人工确认：该字段由你手动选择。" : "请选择字段；也可以选择未推荐字段。";
+        hint.style.color = candidate?.confidence === "LOW" || !candidate && select.value ? "var(--danger)" : "";
+      };
+      select.addEventListener("change", refreshHint);
+      if (candidates[0]) select.value = candidates[0].field_id;
+      refreshHint();
+      const wrap = document.createElement("div"); wrap.className = "field"; wrap.dataset.semantic = semantic; wrap.append(label, select, hint); return wrap;
+    }
+    function selectedMap(scope) { return Object.fromEntries(Array.from(scope.querySelectorAll("select[data-semantic]")).map((item) => [item.dataset.semantic, item.value]).filter(([, value]) => value)); }
+    function renderWizard(snapshot) {
+      wizard.replaceChildren();
+      const tables = snapshot.tables || []; const candidates = snapshot.candidates || [];
+      const roles = {
+        products: ["product_id","product_name","min_price","product_image","logo_image"],
+        tasks: ["task_id","product_id","img_type","aspect_ratio","main_text","promo_price","deploy_date","sub_text","campaign_name","campaign_start","campaign_end"],
+        writeback: ["status","issues","processed_at","input_hash","pipeline_version","image_attachment","image_url"]
+      };
+      const optional = new Set(["product_image","logo_image","sub_text","campaign_name","campaign_start","campaign_end","image_attachment","image_url"]);
+      const groups = {};
+      const renderFields = (group, role, tableId) => {
+        group.querySelectorAll(".field").forEach((node) => node.remove());
+        const table = tables.find((item) => item.table_id === tableId);
+        const fields = table?.fields || [];
+        roles[role].forEach((semantic) => group.append(mappingField(
+          semantic, fields,
+          candidates.filter((candidate) => candidate.semantic_name === semantic && candidate.table_id === tableId),
+          !optional.has(semantic)
+        )));
+      };
+      ["products", "tasks"].forEach((role) => {
+        const group = document.createElement("section"); group.dataset.role = role; groups[role] = group;
+        const heading = document.createElement("h3"); heading.textContent = role === "products" ? "商品表映射" : "任务表映射";
+        const table = document.createElement("select"); table.dataset.tableRole = role; table.append(new Option("选择表", ""));
+        tables.forEach((item) => table.append(new Option(item.name, item.table_id))); group.append(heading, table);
+        table.addEventListener("change", () => { renderFields(group, role, table.value); if (role === "tasks") { groups.writeback.dataset.tableId = table.value; renderFields(groups.writeback, "writeback", table.value); } });
+        wizard.append(group);
+      });
+      const writeback = document.createElement("section"); writeback.dataset.role = "writeback"; groups.writeback = writeback;
+      const heading = document.createElement("h3"); heading.textContent = "输出回写映射";
+      const note = document.createElement("p"); note.textContent = "回写字段固定使用上方任务表；请映射全部必填字段，并至少选择一种图片回写方式。";
+      writeback.append(heading, note); wizard.append(writeback);
+      confirmButton.disabled = false;
+    }
+    async function discoverSource() {
+      if (!state.adminToken) { showToast("请先输入管理员口令。", true); return; }
+      const payload = {source_id: onboarding.sourceId.value.trim(), display_name: onboarding.displayName.value.trim(), base_url: onboarding.base.value.trim(), credential_ref: onboarding.credential.value.trim()};
+      const data = await fetchJson("/api/discover", {method:"POST", headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken}, body:JSON.stringify(payload)}); onboarding.snapshot = data; renderWizard(data);
+    }
+    async function confirmSource() {
+      const products = wizard.querySelector('[data-role="products"]'), tasks = wizard.querySelector('[data-role="tasks"]'), writeback = wizard.querySelector('[data-role="writeback"]');
+      const selection = {product_table_id: products.querySelector("select[data-table-role]").value, task_table_id: tasks.querySelector("select[data-table-role]").value, writeback_table_id: writeback.dataset.tableId || "", product_fields:selectedMap(products), task_fields:selectedMap(tasks), writeback_fields:selectedMap(writeback), product_reference_strategy:onboarding.reference.value};
+      const data = await fetchJson("/api/confirm", {method:"POST", headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken}, body:JSON.stringify({source_id:onboarding.sourceId.value.trim(),display_name:onboarding.displayName.value.trim(),base_url:onboarding.base.value.trim(),credential_ref:onboarding.credential.value.trim(),revision:Number(onboarding.revision.value),selection})}); onboarding.draftRevision=data.revision; activateButton.disabled=false; showToast(data.dry_run?.passed ? "dry-run 通过，等待显式激活。" : "dry-run 未通过。", !data.dry_run?.passed);
+    }
+    async function activateSource() { const sourceId = onboarding.sourceId.value.trim(); const data = await fetchJson("/api/activate", {method:"POST",headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken},body:JSON.stringify({source_id:sourceId,revision:onboarding.draftRevision,expected_active_revision:state.activeRevisions[sourceId] ?? null})}); await loadSources(); sourceSelect.value=data.source_id; state.sourceId=data.source_id; await loadRecords(); showToast("数据源已激活。"); }
+
     async function executeSelectedTask() {
       if (!state.apiOnline) {
         showToast("当前仅支持浏览预置案例。", true);
@@ -2887,7 +3021,7 @@
             "Content-Type": "application/json",
             "X-Demo-Admin-Token": state.adminToken
           },
-          body: JSON.stringify({task_id: state.selectedId})
+          body: JSON.stringify({task_id: state.selectedId, source_id: state.sourceId || undefined})
         });
         const record = result.record;
         state.rulesVersion = result.rules_version || state.rulesVersion;
@@ -2940,9 +3074,8 @@
       try {
         const result = await fetchJson("/api/sync", {
           method: "POST",
-          headers: {
-            "X-Demo-Admin-Token": state.adminToken
-          }
+          headers: {"Content-Type": "application/json", "X-Demo-Admin-Token": state.adminToken},
+          body: JSON.stringify({source_id: state.sourceId || undefined})
         });
         const count = Number(result.batch?.processed || 0);
         await loadRecords();
@@ -2973,6 +3106,10 @@
     document.getElementById("new-button").addEventListener("click", newTask);
     document.getElementById("refresh-button").addEventListener("click", loadRecords);
     syncButton.addEventListener("click", syncPendingTasks);
+    sourceSelect.addEventListener("change", () => { state.sourceId = sourceSelect.value; loadRecords(); });
+    discoverButton.addEventListener("click", () => discoverSource().catch((error) => showToast(error.message, true)));
+    confirmButton.addEventListener("click", () => confirmSource().catch((error) => showToast(error.message, true)));
+    activateButton.addEventListener("click", () => activateSource().catch((error) => showToast(error.message, true)));
     document.getElementById("admin-cancel").addEventListener("click", () => {
       state.pendingAction = "";
       adminDialog.close();
@@ -2982,6 +3119,7 @@
       state.adminToken = adminTokenInput.value;
       adminTokenInput.value = "";
       adminDialog.close();
+      await loadSources();
       if (state.pendingAction === "run") {
         state.pendingAction = "";
         await executeSelectedTask();
