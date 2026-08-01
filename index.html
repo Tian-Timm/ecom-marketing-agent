@@ -829,50 +829,11 @@
       text-decoration: underline;
     }
 
-    .onboarding-teaser {
-      grid-template-columns: minmax(190px, 0.5fr) minmax(0, 1.5fr) auto;
-    }
-
-    .onboarding-teaser .demo-heading p {
-      white-space: normal;
-    }
-
-    .onboarding-steps {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(90px, 1fr));
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .onboarding-step {
-      min-width: 0;
-      padding: 7px 8px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-control);
-      background: var(--surface-subtle);
-    }
-
-    .onboarding-step small,
-    .onboarding-step strong {
-      display: block;
-    }
-
-    .onboarding-step small {
+    .onboarding-hint {
+      margin: -4px 2px 10px;
       color: var(--muted);
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 700;
-    }
-
-    .onboarding-step strong {
-      margin-top: 2px;
-      color: var(--ink-soft);
       font-size: 10px;
-      line-height: 1.35;
-    }
-
-    .onboarding-access {
-      white-space: nowrap;
+      line-height: 1.5;
     }
 
     .demo-pipeline {
@@ -1817,14 +1778,6 @@
         gap: 7px;
       }
 
-      .onboarding-teaser {
-        grid-template-columns: 1fr;
-      }
-
-      .onboarding-access {
-        width: 100%;
-      }
-
       .workspace {
         grid-template-columns: 230px minmax(420px, 1fr);
       }
@@ -1956,10 +1909,6 @@
       .demo-bar {
         margin-bottom: 8px;
         padding: 9px;
-      }
-
-      .onboarding-steps {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .demo-heading p {
@@ -2186,20 +2135,7 @@
       </div>
     </section>
 
-    <section class="demo-bar onboarding-teaser" id="datasource-onboarding" aria-labelledby="datasource-heading">
-      <div class="demo-heading">
-        <h2 id="datasource-heading">数据源接入能力</h2>
-        <p>面向企业数据源的接入入口。普通访客可直接体验 Demo；接入新的飞书 Base 需要进入受保护流程。</p>
-      </div>
-      <div class="onboarding-steps" aria-label="数据源接入步骤">
-        <div class="onboarding-step"><small>STEP 1</small><strong>输入飞书 Base</strong></div>
-        <div class="onboarding-step"><small>STEP 2</small><strong>发现表和字段</strong></div>
-        <div class="onboarding-step"><small>STEP 3</small><strong>字段映射</strong></div>
-        <div class="onboarding-step"><small>STEP 4</small><strong>dry-run</strong></div>
-        <div class="onboarding-step"><small>STEP 5</small><strong>激活</strong></div>
-      </div>
-      <button class="secondary onboarding-access" id="datasource-access-button" type="button">数据源接入</button>
-    </section>
+    <p class="onboarding-hint" id="onboarding-hint">支持飞书 Base 字段发现、语义映射、dry-run 与版本化激活。</p>
 
     <section class="demo-bar hidden" id="onboarding-panel" aria-labelledby="onboarding-heading">
       <div class="demo-heading">
@@ -2385,7 +2321,6 @@
     const connectionStatus = document.getElementById("connection-status");
     const modeStatus = document.getElementById("mode-status");
     const adminModeToggle = document.getElementById("admin-mode-toggle");
-    const datasourceAccessButton = document.getElementById("datasource-access-button");
     const sourceSelectCell = document.getElementById("source-select-cell");
     const sourceName = document.getElementById("source-name");
     const runtimeHint = document.getElementById("runtime-hint");
@@ -2521,7 +2456,6 @@
       publicReadonlyNote.classList.toggle("hidden", state.isAdminMode || Boolean(state.sourceId));
       modeStatus.textContent = state.isAdminMode ? "数据源接入模式" : "公开演示模式";
       adminModeToggle.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
-      datasourceAccessButton.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
 
       Object.values(fields).forEach((field) => {
         field.disabled = true;
@@ -3236,7 +3170,6 @@
     }
 
     adminModeToggle.addEventListener("click", toggleAdminMode);
-    datasourceAccessButton.addEventListener("click", toggleAdminMode);
     document.getElementById("task-form").addEventListener("submit", runTask);
     document.getElementById("new-button").addEventListener("click", newTask);
     document.getElementById("refresh-button").addEventListener("click", loadRecords);
@@ -3275,7 +3208,6 @@
         onboardingPanel.classList.toggle("hidden", !canConfigureSources);
         modeStatus.textContent = "数据源接入模式";
         adminModeToggle.textContent = "退出数据源接入";
-        datasourceAccessButton.textContent = "退出数据源接入";
         configureRuntimeUI(state.runtime);
         showToast("已进入数据源接入流程。");
 
