@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from html.parser import HTMLParser
 from pathlib import Path
@@ -206,6 +207,47 @@ class FrontendDemoContractTests(unittest.TestCase):
         summary_css = self.html.split(".system-summary-bar {", 1)[1].split("}", 1)[0]
         self.assertIn("flex-wrap: wrap", summary_css)
         self.assertNotIn("overflow-x", summary_css)
+
+    def test_frontend_css_is_consolidated_and_keeps_final_breakpoints(self) -> None:
+        style = self.html.split("<style>", 1)[1].split("</style>", 1)[0]
+        for selector in (
+            ":root",
+            "body",
+            ".topbar",
+            ".shell",
+            ".intro",
+            ".demo-bar",
+            ".workspace",
+            ".pane",
+            ".task-list",
+            ".form-grid",
+            ".result-pane",
+            ".preview",
+            ".evidence-strip",
+        ):
+            self.assertEqual(
+                len(re.findall(rf"^    {re.escape(selector)} \{{", style, re.MULTILINE)),
+                1,
+                selector,
+            )
+        for breakpoint in (
+            "@media (max-width: 1240px)",
+            "@media (max-width: 840px)",
+            "@media (max-width: 640px)",
+            "@media (max-width: 430px)",
+            "@media (prefers-reduced-motion: reduce)",
+        ):
+            self.assertEqual(style.count(breakpoint), 1, breakpoint)
+        for obsolete in (
+            "@media (max-width: 1180px)",
+            "@media (max-width: 760px)",
+            "@media (max-width: 520px)",
+            ".metrics {",
+            ".source-strip {",
+        ):
+            self.assertNotIn(obsolete, style)
+        self.assertIn(".readonly-task-summary", style)
+        self.assertIn(".system-summary-bar", style)
 
     def test_demo_exposes_pipeline_and_feishu_delivery_evidence(self) -> None:
         self.assertEqual(self.report["schema_version"], "2.0")
