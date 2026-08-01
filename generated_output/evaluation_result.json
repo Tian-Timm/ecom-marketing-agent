@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "dataset": "marketing_tasks.csv",
   "rules_version": "2026-07-30.1",
-  "duration_seconds": 0.485,
+  "duration_seconds": 0.418,
   "summary": {
     "total_cases": 10,
     "expected_anomalies": 6,

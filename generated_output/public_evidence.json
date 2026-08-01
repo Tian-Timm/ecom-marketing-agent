@@ -1,0 +1,23 @@
+{
+  "updated_at": "2026-07-31T00:00:00+08:00",
+  "git_commit": "0ead8ef",
+  "pipeline_version": "2026-07-31.2",
+  "tests": {
+    "passed": 30,
+    "total": 30
+  },
+  "evaluation": {
+    "status_correct": 10,
+    "status_total": 10,
+    "anomalies_detected": 6,
+    "anomalies_total": 6,
+    "rule_codes_correct": 10,
+    "rule_codes_total": 10
+  },
+  "e2e": {
+    "passed_duration_seconds": 10.68,
+    "blocked_duration_seconds": 6.28,
+    "idempotency": "SKIPPED_UNCHANGED"
+  },
+  "sample_note": "基于 10 条定向项目评测集，其中 6 条为边界异常任务；最近更新见处理版本。"
+}

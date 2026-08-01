@@ -1755,6 +1755,80 @@
       background: #fcf5f4;
     }
 
+    .evidence-strip {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .evidence-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .evidence-header h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 680;
+    }
+
+    .evidence-link {
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .evidence-link:hover {
+      text-decoration: underline;
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .evidence-card {
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--surface-subtle);
+    }
+
+    .evidence-label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .evidence-value {
+      display: block;
+      margin-top: 2px;
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .evidence-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -1908,6 +1982,10 @@
       .metrics {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         margin-bottom: 8px;
+      }
+
+      .evidence-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .source-strip {
@@ -2099,23 +2177,23 @@
     <section class="demo-bar" aria-labelledby="demo-heading">
       <div class="demo-heading">
         <h2 id="demo-heading">快速体验审查案例</h2>
-        <p id="demo-note">选择一个业务场景，输入、规则结论和图片产物会同步切换。</p>
+        <p id="demo-note">依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。</p>
       </div>
       <div class="demo-case-list" id="demo-case-list">
         <button class="demo-case" type="button" data-demo-task="MKT-001" aria-pressed="false">
-          <span class="demo-case-name">合规任务</span>
+          <span class="demo-case-name">① 合规出图</span>
           <span class="demo-case-result passed">出图</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-008" aria-pressed="false">
-          <span class="demo-case-name">价格低于底线</span>
+          <span class="demo-case-name">② 价格拦截</span>
           <span class="demo-case-result blocked">需修改</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-009" aria-pressed="false">
-          <span class="demo-case-name">广告违禁词</span>
+          <span class="demo-case-name">③ 文案拦截</span>
           <span class="demo-case-result blocked">需修改</span>
         </button>
         <button class="demo-case" type="button" data-demo-task="MKT-005" aria-pressed="false">
-          <span class="demo-case-name">修改产品外观</span>
+          <span class="demo-case-name">④ 外观修改</span>
           <span class="demo-case-result blocked">需修改</span>
         </button>
       </div>
@@ -2208,6 +2286,32 @@
           <div class="empty">选择一条记录查看审查结果和营销图片。</div>
         </div>
       </section>
+    </section>
+
+    <section class="evidence-strip hidden" id="evidence-section" aria-label="运行证据摘要">
+      <div class="evidence-header">
+        <h2>运行证据摘要</h2>
+        <a class="evidence-link" href="https://acn4y3muxbcy.feishu.cn/wiki/VSfSwPHqLi5ouqkAc6BchokXnLd" target="_blank" rel="noreferrer">查看评测说明</a>
+      </div>
+      <div class="evidence-grid">
+        <div class="evidence-card">
+          <span class="evidence-label">自动化测试</span>
+          <span class="evidence-value" id="ev-tests">--</span>
+        </div>
+        <div class="evidence-card">
+          <span class="evidence-label">状态一致率</span>
+          <span class="evidence-value" id="ev-status">--</span>
+        </div>
+        <div class="evidence-card">
+          <span class="evidence-label">异常任务检出</span>
+          <span class="evidence-value" id="ev-anomalies">--</span>
+        </div>
+        <div class="evidence-card">
+          <span class="evidence-label">合规端到端耗时</span>
+          <span class="evidence-value" id="ev-e2e">--</span>
+        </div>
+      </div>
+      <p class="evidence-note" id="ev-note">基于 10 条定向项目评测集，其中 6 条为边界异常任务；最近更新见处理版本。</p>
     </section>
   </main>
 
@@ -2390,7 +2494,7 @@
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "飞书任务输入";
         inputPaneNote.textContent = "字段来自当前 Base 记录";
-        demoNote.textContent = "选择预置案例，或从左侧查看实时飞书任务。";
+        demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
         runtimeHint.textContent = canExecute
           ? "选择任务后可使用管理员口令执行实时审查。"
           : "当前开放实时读取，执行功能等待服务端配置完成。";
@@ -2399,8 +2503,8 @@
         connectionStatus.classList.add("live");
         inputPaneTitle.textContent = "案例输入快照";
         inputPaneNote.textContent = "查看预置案例的输入信息";
-        demoNote.textContent = "选择一个场景，查看输入信息、审查结论和生成结果。";
-        runtimeHint.textContent = "当前可浏览预置案例。选择不同场景查看审查结果。";
+        demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
+        runtimeHint.textContent = "当前可浏览预置案例。选择任务后点击执行需要管理员口令。";
         runButton.disabled = true;
       }
     }
@@ -2607,6 +2711,15 @@
       }
 
       resultContent.append(summary);
+      resultContent.append(preview);
+      if (record.status === "PASSED" && record.generated_image) {
+        const download = document.createElement("a");
+        download.className = "download";
+        download.href = generatedImageUrl;
+        download.download = record.generated_image;
+        download.textContent = "下载合规图片";
+        resultContent.appendChild(download);
+      }
       if (record.semantic_review) {
         const semantic = document.createElement("div");
         semantic.className = "semantic-evidence";
@@ -2624,15 +2737,7 @@
         semantic.append(semanticTitle, semanticSummary, semanticMeta);
         resultContent.appendChild(semantic);
       }
-      resultContent.append(buildExecutionTrace(record), preview);
-      if (record.status === "PASSED" && record.generated_image) {
-        const download = document.createElement("a");
-        download.className = "download";
-        download.href = generatedImageUrl;
-        download.download = record.generated_image;
-        download.textContent = "下载合规图片";
-        resultContent.appendChild(download);
-      }
+      resultContent.append(buildExecutionTrace(record));
       resultContent.appendChild(appendRawResult(record));
       setText("result-time", record.task_id);
     }
@@ -2903,9 +3008,31 @@
       });
     });
 
+    async function loadEvidence() {
+      const section = document.getElementById("evidence-section");
+      try {
+        const data = await fetchJson("generated_output/public_evidence.json");
+        if (data && data.tests && data.evaluation && data.e2e) {
+          setText("ev-tests", `${data.tests.passed}/${data.tests.total}`);
+          setText("ev-status", `${data.evaluation.status_correct}/${data.evaluation.status_total}`);
+          setText("ev-anomalies", `${data.evaluation.anomalies_detected}/${data.evaluation.anomalies_total}`);
+          setText("ev-e2e", `${data.e2e.passed_duration_seconds} 秒`);
+          if (data.sample_note) {
+            setText("ev-note", data.sample_note);
+          }
+          section.classList.remove("hidden");
+        } else {
+          section.classList.add("hidden");
+        }
+      } catch {
+        section.classList.add("hidden");
+      }
+    }
+
     async function initialize() {
       await detectRuntime();
       await loadRecords();
+      await loadEvidence();
     }
 
     initialize();

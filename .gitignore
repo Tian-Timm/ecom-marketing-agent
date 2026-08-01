@@ -1,9 +1,19 @@
-.vercel
+# 1. 密钥与环境变量（严禁上传）
 .env
-__pycache__/
-*.pyc
+.env.local
+.env.*
+
+# 2. Vercel 部署与工具缓存
+.vercel
+.openai/
 dist/
 *.tgz
 
-.vercel
-.env*
+# 3. Python 编译与临时文件
+__pycache__/
+*.pyc
+.python-version
+
+# 4. 本地测试与中间渲染产物
+output_images/
+generated_output/feishu_dry_run_result.json

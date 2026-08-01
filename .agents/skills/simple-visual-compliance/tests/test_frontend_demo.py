@@ -105,6 +105,26 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn("REVIEW_REQUIRED", self.html)
         self.assertIn("FAILED", self.html)
 
+    def test_public_evidence_summary_is_truthful_and_sanitized(self) -> None:
+        evidence_path = PROJECT_ROOT / "generated_output" / "public_evidence.json"
+        self.assertTrue(evidence_path.exists())
+        data = json.loads(evidence_path.read_text(encoding="utf-8"))
+        self.assertEqual(data["tests"]["passed"], 30)
+        self.assertEqual(data["tests"]["total"], 30)
+        self.assertEqual(data["evaluation"]["status_correct"], 10)
+        self.assertEqual(data["evaluation"]["anomalies_detected"], 6)
+        self.assertEqual(data["e2e"]["passed_duration_seconds"], 10.68)
+        self.assertEqual(data["e2e"]["blocked_duration_seconds"], 6.28)
+        self.assertIn("10 条", data["sample_note"])
+
+        content_str = json.dumps(data)
+        self.assertNotIn("FEISHU_APP_SECRET", content_str)
+        self.assertNotIn("DEEPSEEK_API_KEY", content_str)
+        self.assertNotIn("file_token", content_str)
+
+        self.assertIn("evidence-section", self.html)
+        self.assertIn("loadEvidence()", self.html)
+
     def test_required_demo_ids_are_unique(self) -> None:
         required = {
             "demo-heading",
@@ -116,6 +136,12 @@ class FrontendDemoContractTests(unittest.TestCase):
             "semantic-mode",
             "last-sync",
             "admin-dialog",
+            "evidence-section",
+            "ev-tests",
+            "ev-status",
+            "ev-anomalies",
+            "ev-e2e",
+            "ev-note",
         }
         self.assertTrue(required.issubset(set(self.parser.ids)))
         self.assertEqual(len(self.parser.ids), len(set(self.parser.ids)))
