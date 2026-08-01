@@ -129,6 +129,7 @@ class OnlineApiTests(unittest.TestCase):
             report["records"][0]["feishu_record_id"],
             "task-record",
         )
+        self.assertIn("public_demo_run", report["runtime"]["capabilities"])
         adapter.list_records = original
 
     def test_multipart_upload_contains_bitable_target(self) -> None:

@@ -70,6 +70,7 @@ def runtime_status() -> Dict[str, Any]:
             "feishu_write": feishu and write_protected,
             "semantic_review": deepseek,
             "image_delivery": feishu and write_protected,
+            "public_demo_run": feishu and deepseek,
         },
     }
 
@@ -210,6 +211,21 @@ def _summary(records: List[Dict[str, Any]]) -> Dict[str, int]:
     }
 
 
+def _public_snapshot_task_ids() -> set[str]:
+    """Return the task IDs that belong to the public demo snapshot."""
+    if not STATIC_REPORT.exists():
+        return set()
+    try:
+        report = json.loads(STATIC_REPORT.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    return {
+        str(record.get("task_id") or "").strip()
+        for record in report.get("records", [])
+        if str(record.get("task_id") or "").strip()
+    }
+
+
 def live_report(adapter: FeishuOpenApiAdapter | None = None) -> Dict[str, Any]:
     adapter = adapter or FeishuOpenApiAdapter.from_env()
     if adapter is None:
@@ -227,13 +243,22 @@ def live_report(adapter: FeishuOpenApiAdapter | None = None) -> Dict[str, Any]:
     if len(products) != 1:
         raise RuntimeError("演示 Base 的商品资料必须保持为一条")
     fixtures = load_fixture_inputs(PROJECT_ROOT / config["legacy_input_fixture"])
-    tasks = [
-        restore_legacy_input(task, fixtures)
-        for task in adapter.list_records(
-            config["base_token"],
-            config["task_table"]["id"],
-        )
-    ]
+    task_rows = adapter.list_records(
+        config["base_token"],
+        config["task_table"]["id"],
+    )
+    public_task_ids = _public_snapshot_task_ids()
+    task_ids = {
+        scalar_cell_value(task.get("任务ID"))
+        for task in task_rows
+    }
+    if public_task_ids and any(task_id.startswith("MKT-E2E-") for task_id in task_ids):
+        task_rows = [
+            task
+            for task in task_rows
+            if scalar_cell_value(task.get("任务ID")) in public_task_ids
+        ]
+    tasks = [restore_legacy_input(task, fixtures) for task in task_rows]
     records = [
         _record_from_base(task, products[0], config, index)
         for index, task in enumerate(tasks)

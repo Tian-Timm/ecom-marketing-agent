@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-08-01T09:49:58+00:00",
-  "git_commit": "707190f",
+  "updated_at": "2026-08-01T10:06:33+00:00",
+  "git_commit": "348c325",
   "pipeline_version": "2026-08-01.2",
   "rules_version": "2026-07-30.1",
   "tests": {
@@ -30,8 +30,8 @@
   },
   "e2e": {
     "mode": "static_snapshot",
-    "passed_duration_seconds": 1.122,
-    "blocked_duration_seconds": 0.008,
+    "passed_duration_seconds": 0.446,
+    "blocked_duration_seconds": 0.002,
     "idempotency": {
       "admin": "SKIPPED_UNCHANGED",
       "public": "REEXECUTES_EVERY_TIME"
