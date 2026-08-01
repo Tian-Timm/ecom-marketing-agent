@@ -81,7 +81,7 @@ class PublicDemoApiTests(unittest.TestCase):
     def test_public_frontend_shows_readonly_execution_and_inline_image(self) -> None:
         index_html = (Path(__file__).parents[1] / "index.html").read_text(encoding="utf-8")
 
-        self.assertIn("实时读取飞书并重新执行，本次公开体验不会修改飞书数据。", index_html)
+        self.assertIn("实时读取飞书并重新执行，不会回写数据。", index_html)
         self.assertIn("实时只读运行", index_html)
         self.assertIn("未回写飞书", index_html)
         self.assertIn("DeepSeek 语义复核", index_html)

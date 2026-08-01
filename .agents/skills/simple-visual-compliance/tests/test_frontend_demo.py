@@ -75,15 +75,17 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertNotIn("合规审查", intro)
         self.assertNotIn("确定性组装", intro)
         self.assertIn("演示案例", self.html)
-        self.assertIn("实时读取飞书并重新执行，本次公开体验不会修改飞书数据。", self.html)
+        self.assertIn("实时读取飞书并重新执行，不会回写数据。", self.html)
         self.assertIn("运行 Agent", self.html)
         self.assertIn("读取数据", self.html)
         self.assertIn("字段解析", self.html)
         self.assertIn("生成或阻断", self.html)
         for label in ("正常出图", "价格违规", "文案风险", "视觉修改风险"):
             self.assertIn(f'class="demo-case-name">{label}</span>', self.html)
-        for legacy_label in ("MKT-001 · 正常营销任务", "MKT-008 · 价格违规任务", "MKT-009 · 文案风险任务", "MKT-005 · 视觉修改风险"):
-            self.assertNotIn(legacy_label, self.html)
+        for result_title in ("正常营销任务", "价格违规任务", "文案风险任务", "视觉修改风险"):
+            self.assertIn(result_title, self.html)
+        self.assertIn('heading.textContent = `${record.task_id} · ${resultTitles[record.task_id] || "营销任务"}`;', self.html)
+        self.assertIn('setText("result-time", statusLabel(record.status));', self.html)
         self.assertIn('class="demo-case-id">MKT-001</span>', self.html)
         self.assertIn('button.setAttribute("aria-pressed", String(active))', self.html)
         self.assertIn("selectRecord(taskId)", self.html)
@@ -194,15 +196,22 @@ class FrontendDemoContractTests(unittest.TestCase):
             "source-name",
             "source-mode",
             "semantic-mode",
-            "public-mode",
             "last-sync",
         ):
             self.assertIn(f'id="{element_id}"', self.html)
+        self.assertNotIn('id="public-mode"', self.html)
+        self.assertNotIn("商品数量", self.html)
+        self.assertNotIn("数据来源", self.html)
+        self.assertNotIn("同步方式", self.html)
+        self.assertNotIn("公开模式", self.html)
+        self.assertIn('class="summary-group summary-source-group"', self.html)
+        self.assertIn('class="summary-group summary-results-group"', self.html)
+        self.assertIn('class="summary-group summary-runtime-group"', self.html)
         self.assertIn('id="source-select-cell"', self.html)
         self.assertIn('id="source-select"', self.html)
         self.assertIn("function updateMetrics()", self.html)
         self.assertIn("function configureRuntimeUI(runtime)", self.html)
-        self.assertIn('publicMode.textContent = state.isAdminMode ? "管理员模式" : "公开只读";', self.html)
+        self.assertNotIn("publicMode.textContent", self.html)
         self.assertIn('setText("source-mode", apiOnline ? "飞书实时读取" : "静态快照");', self.html)
         summary_css = self.html.split(".system-summary-bar {", 1)[1].split("}", 1)[0]
         self.assertIn("flex-wrap: wrap", summary_css)
@@ -323,15 +332,18 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertNotIn('action: "run_next_pending"', self.html)
         self.assertIn('id="mode-status"', self.html)
         self.assertIn('id="admin-mode-toggle"', self.html)
-        self.assertIn("数据源接入", self.html)
+        self.assertIn('class="admin-entry" id="admin-mode-toggle"', self.html)
         self.assertIn('id="source-select-cell"', self.html)
         self.assertIn('class="source-cell hidden"', self.html)
         self.assertNotIn("localStorage", self.html)
         self.assertNotIn("sessionStorage", self.html)
         self.assertIn('state.adminToken = ""', self.html)
         self.assertIn('state.sourceId = ""', self.html)
-        self.assertIn("公开演示模式", self.html)
+        self.assertIn('class="connection" id="mode-status">公开只读</span>', self.html)
+        topbar = self.html.split('<header class="topbar">', 1)[1].split("</header>", 1)[0]
+        self.assertNotIn('id="admin-mode-toggle"', topbar)
         self.assertIn("数据源接入", self.html)
+        self.assertIn("管理员入口", self.html)
         self.assertNotIn(">管理员模式<", self.html)
 
 
