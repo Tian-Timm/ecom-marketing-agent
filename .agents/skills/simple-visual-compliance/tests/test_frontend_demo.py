@@ -66,6 +66,13 @@ class FrontendDemoContractTests(unittest.TestCase):
             self.assertIn(code, {item["code"] for item in record["violations"]})
 
     def test_static_demo_is_truthful_and_local_execution_remains_available(self) -> None:
+        self.assertIn("电商营销素材合规与生成 Agent", self.html)
+        self.assertIn("连接飞书 Base，自动读取商品资料和营销任务，完成营销素材风险审查与自动生成。", self.html)
+        self.assertIn("体验 Demo", self.html)
+        self.assertIn("运行 Agent", self.html)
+        self.assertIn("读取商品资料", self.html)
+        self.assertIn("字段语义解析", self.html)
+        self.assertIn("图片生成 / 阻断", self.html)
         self.assertIn("在线案例演示", self.html)
         self.assertIn("查看预置案例的输入信息", self.html)
         self.assertIn('fetchJson("/api/run"', self.html)
@@ -171,6 +178,12 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn('action: "run_next_pending"', self.html)
         self.assertIn('id="mode-status"', self.html)
         self.assertIn('id="admin-mode-toggle"', self.html)
+        self.assertIn('id="datasource-access-button"', self.html)
+        self.assertIn("数据源接入能力", self.html)
+        self.assertIn("输入飞书 Base", self.html)
+        self.assertIn("字段映射", self.html)
+        self.assertIn("dry-run", self.html)
+        self.assertIn("激活", self.html)
         self.assertIn('id="source-select-cell"', self.html)
         self.assertIn('class="source-cell hidden"', self.html)
         self.assertNotIn("localStorage", self.html)
@@ -178,7 +191,8 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn('state.adminToken = ""', self.html)
         self.assertIn('state.sourceId = ""', self.html)
         self.assertIn("公开演示模式", self.html)
-        self.assertIn("管理员模式", self.html)
+        self.assertIn("数据源接入", self.html)
+        self.assertNotIn(">管理员模式<", self.html)
 
 
 if __name__ == "__main__":

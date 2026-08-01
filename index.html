@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CHA CUP 营销图片合规审查与生成工作台">
-  <title>CHA CUP 营销图片合规工作台</title>
+  <meta name="description" content="电商营销素材合规与生成 Agent：连接飞书 Base，自动读取商品资料和营销任务，完成营销素材风险审查与自动生成。">
+  <title>电商营销素材合规与生成 Agent</title>
   <style>
     :root {
       color-scheme: light;
@@ -843,7 +843,7 @@
 
     .source-strip {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) repeat(3, minmax(120px, 0.55fr));
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr) repeat(4, minmax(105px, 0.55fr));
       margin-bottom: 10px;
       overflow: hidden;
       border: 1px solid var(--line);
@@ -891,6 +891,80 @@
 
     .source-value a:hover {
       text-decoration: underline;
+    }
+
+    .onboarding-teaser {
+      grid-template-columns: minmax(190px, 0.5fr) minmax(0, 1.5fr) auto;
+    }
+
+    .onboarding-teaser .demo-heading p {
+      white-space: normal;
+    }
+
+    .onboarding-steps {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(90px, 1fr));
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .onboarding-step {
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--surface-subtle);
+    }
+
+    .onboarding-step small,
+    .onboarding-step strong {
+      display: block;
+    }
+
+    .onboarding-step small {
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .onboarding-step strong {
+      margin-top: 2px;
+      color: var(--ink-soft);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .onboarding-access {
+      white-space: nowrap;
+    }
+
+    .demo-pipeline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .demo-pipeline span {
+      flex: 0 0 auto;
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-badge);
+      color: var(--ink-soft);
+      background: var(--surface-subtle);
+      font-size: 10px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .demo-pipeline i {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 12px;
+      font-style: normal;
     }
 
     .shell {
@@ -974,7 +1048,7 @@
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       margin-bottom: 10px;
       overflow: hidden;
       border: 1px solid var(--line);
@@ -1843,6 +1917,14 @@
         gap: 7px;
       }
 
+      .onboarding-teaser {
+        grid-template-columns: 1fr;
+      }
+
+      .onboarding-access {
+        width: 100%;
+      }
+
       .workspace {
         grid-template-columns: 230px minmax(420px, 1fr);
       }
@@ -1887,11 +1969,11 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .source-cell:nth-child(2) {
+      .source-cell:nth-child(even) {
         border-right: 0;
       }
 
-      .source-cell:nth-child(-n + 2) {
+      .source-cell:nth-child(-n + 4) {
         border-bottom: 1px solid var(--line);
       }
 
@@ -1995,6 +2077,10 @@
       .demo-bar {
         margin-bottom: 8px;
         padding: 9px;
+      }
+
+      .onboarding-steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .demo-heading p {
@@ -2113,7 +2199,7 @@
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
       <span class="connection" id="mode-status">公开演示模式</span>
-      <button class="secondary" id="admin-mode-toggle" type="button" style="min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 999px;">管理员模式</button>
+      <button class="secondary" id="admin-mode-toggle" type="button" style="min-height: 32px; padding: 0 12px; font-size: 12px; border-radius: 999px;">数据源接入</button>
       <div class="connection" id="connection-status">正在连接</div>
     </div>
   </header>
@@ -2121,8 +2207,8 @@
   <main class="shell">
     <section class="intro" aria-labelledby="page-title">
       <div>
-        <h1 id="page-title">先审查，再出图</h1>
-        <p>填写营销任务，系统会检查价格、日期、画布比例和文案风险。</p>
+        <h1 id="page-title">电商营销素材合规与生成 Agent</h1>
+        <p>连接飞书 Base，自动读取商品资料和营销任务，完成营销素材风险审查与自动生成。</p>
       </div>
       <div class="flow" aria-label="处理流程">
         <div class="flow-item">
@@ -2140,9 +2226,46 @@
       </div>
     </section>
 
-    <section class="metrics" aria-label="当前批次统计">
+    <section class="demo-bar" aria-labelledby="demo-heading">
+      <div class="demo-heading">
+        <h2 id="demo-heading">体验 Demo</h2>
+        <p id="demo-note">选择一个真实案例，点击“运行 Agent”，查看同一套流程如何放行合规任务并阻断业务风险。</p>
+        <div class="demo-pipeline" aria-label="Agent 执行过程">
+          <span>读取商品资料</span><i aria-hidden="true">↓</i>
+          <span>读取营销任务</span><i aria-hidden="true">↓</i>
+          <span>字段语义解析</span><i aria-hidden="true">↓</i>
+          <span>规则审查</span><i aria-hidden="true">↓</i>
+          <span>语义复核</span><i aria-hidden="true">↓</i>
+          <span>图片生成 / 阻断</span>
+        </div>
+      </div>
+      <div class="demo-case-list" id="demo-case-list">
+        <button class="demo-case" type="button" data-demo-task="MKT-001" aria-pressed="false">
+          <span class="demo-case-name">MKT-001 · 正常营销任务</span>
+          <span class="demo-case-result passed">出图</span>
+        </button>
+        <button class="demo-case" type="button" data-demo-task="MKT-008" aria-pressed="false">
+          <span class="demo-case-name">MKT-008 · 价格违规任务</span>
+          <span class="demo-case-result blocked">阻断</span>
+        </button>
+        <button class="demo-case" type="button" data-demo-task="MKT-009" aria-pressed="false">
+          <span class="demo-case-name">MKT-009 · 文案风险任务</span>
+          <span class="demo-case-result blocked">阻断</span>
+        </button>
+        <button class="demo-case" type="button" data-demo-task="MKT-005" aria-pressed="false">
+          <span class="demo-case-name">MKT-005 · 视觉修改风险</span>
+          <span class="demo-case-result blocked">阻断</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="当前 Demo 数据统计">
       <div class="metric">
-        <div class="metric-label">任务总数</div>
+        <div class="metric-label">商品数量</div>
+        <div class="metric-value" id="metric-products">0</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">任务数量</div>
         <div class="metric-value" id="metric-total">0</div>
       </div>
       <div class="metric">
@@ -2165,8 +2288,12 @@
         <select class="source-value" id="source-select"><option value="">演示快照（公开）</option></select>
       </div>
       <div class="source-cell">
+        <span class="source-label">当前数据源</span>
+        <span class="source-value" id="source-name">CHA CUP 保温杯营销 Base</span>
+      </div>
+      <div class="source-cell">
         <span class="source-label">数据来源</span>
-        <span class="source-value"><a id="base-link" href="https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN" target="_blank" rel="noreferrer">飞书多维表格</a></span>
+        <span class="source-value"><a id="base-link" aria-label="飞书多维表格 Base" href="https://acn4y3muxbcy.feishu.cn/base/SfsSb7Tw2aeiQJsmQTlczjX7nyN" target="_blank" rel="noreferrer">飞书 Base</a></span>
       </div>
       <div class="source-cell">
         <span class="source-label">同步方式</span>
@@ -2182,10 +2309,25 @@
       </div>
     </section>
 
-    <section class="demo-bar" id="onboarding-panel" aria-labelledby="onboarding-heading">
+    <section class="demo-bar onboarding-teaser" id="datasource-onboarding" aria-labelledby="datasource-heading">
       <div class="demo-heading">
-        <h2 id="onboarding-heading">接入数据源</h2>
-        <p>管理员口令模式下：Base 信息 → 发现字段与低置信度候选 → 确认映射与 dry-run → 显式激活。凭据仅填写受限 credential_ref，不输入密钥。</p>
+        <h2 id="datasource-heading">数据源接入能力</h2>
+        <p>面向企业数据源的接入入口。普通访客可直接体验 Demo；接入新的飞书 Base 需要进入受保护流程。</p>
+      </div>
+      <div class="onboarding-steps" aria-label="数据源接入步骤">
+        <div class="onboarding-step"><small>STEP 1</small><strong>输入飞书 Base</strong></div>
+        <div class="onboarding-step"><small>STEP 2</small><strong>发现表和字段</strong></div>
+        <div class="onboarding-step"><small>STEP 3</small><strong>字段映射</strong></div>
+        <div class="onboarding-step"><small>STEP 4</small><strong>dry-run</strong></div>
+        <div class="onboarding-step"><small>STEP 5</small><strong>激活</strong></div>
+      </div>
+      <button class="secondary onboarding-access" id="datasource-access-button" type="button">数据源接入</button>
+    </section>
+
+    <section class="demo-bar hidden" id="onboarding-panel" aria-labelledby="onboarding-heading">
+      <div class="demo-heading">
+        <h2 id="onboarding-heading">数据源接入流程</h2>
+        <p>Step 1 输入飞书 Base；Step 2 发现表和字段；Step 3 确认字段映射；Step 4 执行 dry-run；Step 5 显式激活。credential_ref 只引用部署环境凭据，不输入密钥。</p>
       </div>
       <div class="form-grid">
         <div class="field"><label for="onboarding-source-id">source_id</label><input id="onboarding-source-id" placeholder="cha_cup_cn"></div>
@@ -2195,33 +2337,8 @@
         <div class="field"><label for="onboarding-revision">revision</label><input id="onboarding-revision" type="number" min="1" value="1"></div>
         <div class="field"><label for="onboarding-reference">商品关联方式</label><select id="onboarding-reference"><option value="AUTO">自动（按字段类型）</option><option value="DIRECT_VALUE">商品 ID 文本/数字</option><option value="LINKED_RECORD">关联记录</option></select></div>
       </div>
-      <div class="form-actions"><button class="secondary" id="discover-button" type="button">1. 发现表与字段</button><button class="secondary" id="confirm-button" type="button" disabled>2. 确认并 dry-run</button><button class="primary" id="activate-button" type="button" disabled>3. 显式激活</button></div>
+      <div class="form-actions"><button class="secondary" id="discover-button" type="button">Step 2 · 发现表和字段</button><button class="secondary" id="confirm-button" type="button" disabled>Step 4 · 确认映射并 dry-run</button><button class="primary" id="activate-button" type="button" disabled>Step 5 · 激活</button></div>
       <div id="mapping-wizard" class="task-list"><div class="empty">发现结果将在这里生成动态表选择与字段映射；LOW 候选会高亮，必须人工确认。</div></div>
-    </section>
-
-    <section class="demo-bar" aria-labelledby="demo-heading">
-      <div class="demo-heading">
-        <h2 id="demo-heading">快速体验审查案例</h2>
-        <p id="demo-note">依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。</p>
-      </div>
-      <div class="demo-case-list" id="demo-case-list">
-        <button class="demo-case" type="button" data-demo-task="MKT-001" aria-pressed="false">
-          <span class="demo-case-name">① 合规出图</span>
-          <span class="demo-case-result passed">出图</span>
-        </button>
-        <button class="demo-case" type="button" data-demo-task="MKT-008" aria-pressed="false">
-          <span class="demo-case-name">② 价格拦截</span>
-          <span class="demo-case-result blocked">需修改</span>
-        </button>
-        <button class="demo-case" type="button" data-demo-task="MKT-009" aria-pressed="false">
-          <span class="demo-case-name">③ 文案拦截</span>
-          <span class="demo-case-result blocked">需修改</span>
-        </button>
-        <button class="demo-case" type="button" data-demo-task="MKT-005" aria-pressed="false">
-          <span class="demo-case-name">④ 外观修改</span>
-          <span class="demo-case-result blocked">需修改</span>
-        </button>
-      </div>
     </section>
 
     <section class="workspace" aria-label="营销任务工作区">
@@ -2295,7 +2412,7 @@
             </div>
           </div>
           <div class="form-actions">
-            <button class="primary" id="run-button" type="submit" disabled>执行所选任务</button>
+            <button class="primary" id="run-button" type="submit" disabled>运行 Agent</button>
             <button class="secondary" id="new-button" type="button">新建任务</button>
           </div>
           <p class="runtime-hint" id="runtime-hint">正在准备审查功能。</p>
@@ -2343,10 +2460,10 @@
   <div class="toast hidden" id="toast" role="status"></div>
   <dialog id="admin-dialog" aria-labelledby="admin-title">
     <form class="admin-form" id="admin-form">
-      <h2 id="admin-title">输入执行口令</h2>
-      <p>实时审查会调用 DeepSeek，并可能上传图片和回写飞书。口令仅保留在当前页面内存中。</p>
+      <h2 id="admin-title">验证数据源接入权限</h2>
+      <p>数据源接入和实时处理可能读取或回写飞书。验证口令仅保留在当前页面内存中。</p>
       <div class="field">
-        <label for="admin-token">管理员执行口令</label>
+        <label for="admin-token">接入验证口令</label>
         <input id="admin-token" type="password" autocomplete="off" required>
       </div>
       <div class="admin-actions">
@@ -2391,7 +2508,9 @@
     const connectionStatus = document.getElementById("connection-status");
     const modeStatus = document.getElementById("mode-status");
     const adminModeToggle = document.getElementById("admin-mode-toggle");
+    const datasourceAccessButton = document.getElementById("datasource-access-button");
     const sourceSelectCell = document.getElementById("source-select-cell");
+    const sourceName = document.getElementById("source-name");
     const runtimeHint = document.getElementById("runtime-hint");
     const runButton = document.getElementById("run-button");
     const formActions = document.querySelector(".form-actions");
@@ -2446,9 +2565,15 @@
 
     function updateMetrics() {
       const total = state.records.length;
+      const products = new Set(
+        state.records
+          .map((record) => record.product_id || record.product_name)
+          .filter(Boolean)
+      ).size;
       const passed = state.records.filter((record) => record.status === "PASSED").length;
       const blocked = state.records.filter((record) => record.status === "BLOCKED").length;
       const images = state.records.filter((record) => Boolean(record.generated_image)).length;
+      setText("metric-products", products);
       setText("metric-total", total);
       setText("metric-passed", passed);
       setText("metric-blocked", blocked);
@@ -2509,6 +2634,7 @@
         runtime?.capabilities?.feishu_write &&
         runtime?.capabilities?.semantic_review
       );
+      const canPreviewPublic = Boolean(state.records.length && !state.sourceId);
       state.apiOnline = apiOnline;
       state.demoMode = !apiOnline;
       state.runtime = runtime || null;
@@ -2516,8 +2642,9 @@
       const canConfigureSources = Boolean(runtime?.capabilities?.onboarding_write);
       onboardingPanel.classList.toggle("hidden", !state.isAdminMode || !canConfigureSources);
       sourceSelectCell.classList.toggle("hidden", !state.isAdminMode);
-      modeStatus.textContent = state.isAdminMode ? "管理员模式" : "公开演示模式";
-      adminModeToggle.textContent = state.isAdminMode ? "退出管理员模式" : "管理员模式";
+      modeStatus.textContent = state.isAdminMode ? "数据源接入模式" : "公开演示模式";
+      adminModeToggle.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
+      datasourceAccessButton.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
 
       Object.values(fields).forEach((field) => {
         field.disabled = true;
@@ -2525,7 +2652,9 @@
       formActions.classList.remove("hidden");
       newButton.classList.add("hidden");
 
-      const canExecute = state.sourceId ? (canExecuteAdmin && Boolean(state.adminToken)) : canExecutePublic;
+      const canExecute = state.sourceId
+        ? (canExecuteAdmin && Boolean(state.adminToken))
+        : (canExecutePublic || canPreviewPublic);
       const canPending = state.sourceId ? (canExecuteAdmin && Boolean(state.adminToken)) : canExecutePublicPending;
 
       runButton.disabled = !canExecute;
@@ -2541,8 +2670,9 @@
       const source = runtime?.source;
       if (source?.url) {
         document.getElementById("base-link").href = source.url;
-        document.getElementById("base-link").textContent = source.name || "飞书多维表格";
+        document.getElementById("base-link").textContent = "飞书 Base";
       }
+      if (source?.name) sourceName.textContent = source.name;
       if (apiOnline) {
         connectionStatus.textContent = "飞书已连接";
         connectionStatus.classList.add("live");
@@ -2550,10 +2680,10 @@
         inputPaneNote.textContent = "字段来自当前 Base 记录";
         demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
         runtimeHint.textContent = state.isAdminMode
-          ? "当前处于管理员模式，可管理与执行配置化数据源。"
+          ? "当前处于数据源接入模式，可管理与执行配置化数据源。"
           : canExecutePublic
-            ? "公开演示模式：选择任务后可直接免密执行固定演示任务与处理待审查。"
-            : "实时演示暂时关闭，可查看预置结果。";
+            ? "公开演示模式：选择任务后可直接免密运行固定演示任务。"
+            : "实时演示暂时关闭，运行 Agent 将展示预置结果。";
       } else {
         connectionStatus.textContent = "在线案例演示";
         connectionStatus.classList.add("live");
@@ -2561,9 +2691,9 @@
         inputPaneNote.textContent = "查看预置案例的输入信息";
         demoNote.textContent = "依次选择案例，查看同一套流程如何放行合规任务并阻断业务风险。";
         runtimeHint.textContent = state.isAdminMode
-          ? "当前处于管理员模式。"
+          ? "当前处于数据源接入模式。"
           : "当前可浏览预置案例。";
-        runButton.disabled = !canExecutePublic;
+        runButton.disabled = !(canExecutePublic || canPreviewPublic);
       }
     }
 
@@ -2897,6 +3027,10 @@
         }
         state.rulesVersion = report.rules_version || state.rulesVersion;
         state.records = Array.isArray(report.records) ? report.records : [];
+        const sourceMeta = report.feishu_sync || {};
+        const runtimeSource = report.runtime?.source || {};
+        sourceName.textContent = sourceMeta.base_name || runtimeSource.name || "CHA CUP 保温杯营销 Base";
+        configureRuntimeUI(state.runtime);
         setText(
           "last-sync",
           report.generated_at
@@ -2942,7 +3076,7 @@
         });
         sourceSelect.value = current;
       } catch (error) {
-        showToast("配置数据源不可见：需要管理员口令与可用配置。", true);
+        showToast("配置数据源不可见：需要完成数据源接入验证。", true);
       }
     }
 
@@ -3010,7 +3144,7 @@
       confirmButton.disabled = false;
     }
     async function discoverSource() {
-      if (!state.adminToken) { showToast("请先输入管理员口令。", true); return; }
+      if (!state.adminToken) { showToast("请先完成数据源接入验证。", true); return; }
       const payload = {source_id: onboarding.sourceId.value.trim(), display_name: onboarding.displayName.value.trim(), base_url: onboarding.base.value.trim(), credential_ref: onboarding.credential.value.trim()};
       const data = await fetchJson("/api/discover", {method:"POST", headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken}, body:JSON.stringify(payload)}); onboarding.snapshot = data; renderWizard(data);
     }
@@ -3070,7 +3204,7 @@
           showToast(error.message || "执行失败，请稍后重试。", true);
         } finally {
           configureRuntimeUI(state.runtime);
-          runButton.textContent = "执行所选任务";
+          runButton.textContent = "运行 Agent";
         }
         return;
       }
@@ -3078,6 +3212,14 @@
       runButton.disabled = true;
       runButton.textContent = "正在审查";
       try {
+        if (!state.runtime?.capabilities?.public_demo_run) {
+          const record = state.records.find((item) => item.task_id === state.selectedId);
+          if (record) {
+            selectRecord(record.task_id);
+            showToast("已展示预置审查结果，未写入真实数据源。");
+          }
+          return;
+        }
         const result = await fetchJson("/api/demo_run", {
           method: "POST",
           headers: {
@@ -3118,7 +3260,7 @@
         }
       } finally {
         configureRuntimeUI(state.runtime);
-        runButton.textContent = "执行所选任务";
+        runButton.textContent = "运行 Agent";
       }
     }
 
@@ -3195,10 +3337,10 @@
         sourceSelectCell.classList.add("hidden");
         onboardingPanel.classList.add("hidden");
         modeStatus.textContent = "公开演示模式";
-        adminModeToggle.textContent = "管理员模式";
+        adminModeToggle.textContent = "数据源接入";
         configureRuntimeUI(state.runtime);
         await loadRecords();
-        showToast("已退出管理员模式。");
+        showToast("已退出数据源接入。");
       } else {
         state.pendingAction = "admin_mode";
         adminDialog.showModal();
@@ -3207,6 +3349,7 @@
     }
 
     adminModeToggle.addEventListener("click", toggleAdminMode);
+    datasourceAccessButton.addEventListener("click", toggleAdminMode);
     document.getElementById("task-form").addEventListener("submit", runTask);
     document.getElementById("new-button").addEventListener("click", newTask);
     document.getElementById("refresh-button").addEventListener("click", loadRecords);
@@ -3243,10 +3386,11 @@
         sourceSelectCell.classList.remove("hidden");
         const canConfigureSources = Boolean(state.runtime?.capabilities?.onboarding_write);
         onboardingPanel.classList.toggle("hidden", !canConfigureSources);
-        modeStatus.textContent = "管理员模式";
-        adminModeToggle.textContent = "退出管理员模式";
+        modeStatus.textContent = "数据源接入模式";
+        adminModeToggle.textContent = "退出数据源接入";
+        datasourceAccessButton.textContent = "退出数据源接入";
         configureRuntimeUI(state.runtime);
-        showToast("已进入管理员模式。");
+        showToast("已进入数据源接入流程。");
 
         if (state.pendingAction === "run") {
           state.pendingAction = "";
@@ -3260,7 +3404,7 @@
       } catch (error) {
         state.adminToken = "";
         state.isAdminMode = false;
-        showToast("管理员口令验证失败。", true);
+        showToast("数据源接入验证失败。", true);
       }
     });
     demoCases.forEach((button) => {
