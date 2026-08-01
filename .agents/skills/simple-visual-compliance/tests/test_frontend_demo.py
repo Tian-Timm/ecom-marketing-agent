@@ -180,6 +180,33 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn('details.open = false;', self.html)
         self.assertIn('panel.open = false;', self.html)
 
+    def test_system_summary_merges_metrics_and_datasource_state(self) -> None:
+        self.assertIn('id="system-summary-bar"', self.html)
+        self.assertNotIn('class="metrics"', self.html)
+        self.assertNotIn('class="source-strip"', self.html)
+        for element_id in (
+            "metric-products",
+            "metric-total",
+            "metric-passed",
+            "metric-blocked",
+            "metric-images",
+            "source-name",
+            "source-mode",
+            "semantic-mode",
+            "public-mode",
+            "last-sync",
+        ):
+            self.assertIn(f'id="{element_id}"', self.html)
+        self.assertIn('id="source-select-cell"', self.html)
+        self.assertIn('id="source-select"', self.html)
+        self.assertIn("function updateMetrics()", self.html)
+        self.assertIn("function configureRuntimeUI(runtime)", self.html)
+        self.assertIn('publicMode.textContent = state.isAdminMode ? "管理员模式" : "公开只读";', self.html)
+        self.assertIn('setText("source-mode", apiOnline ? "飞书实时读取" : "静态快照");', self.html)
+        summary_css = self.html.split(".system-summary-bar {", 1)[1].split("}", 1)[0]
+        self.assertIn("flex-wrap: wrap", summary_css)
+        self.assertNotIn("overflow-x", summary_css)
+
     def test_demo_exposes_pipeline_and_feishu_delivery_evidence(self) -> None:
         self.assertEqual(self.report["schema_version"], "2.0")
         self.assertTrue(self.report["pipeline_version"])

@@ -950,46 +950,151 @@
       line-height: 1.6;
     }
 
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+    .system-summary-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 10px;
       margin-bottom: 10px;
-      overflow: hidden;
       border: 1px solid var(--line);
       border-radius: var(--radius-panel);
       background: var(--surface);
       box-shadow: var(--shadow-subtle);
+      padding: 7px 10px;
     }
 
-    .metric {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
+    .system-summary-bar > .metric {
+      display: inline-flex;
       align-items: center;
-      min-height: 50px;
-      padding: 8px 14px;
-      border-right: 1px solid var(--line);
+      flex: 0 0 auto;
+      gap: 5px;
+      min-height: 26px;
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-badge);
+      background: var(--surface-subtle);
+    }
+
+    .system-summary-bar > .metric:first-child {
+      order: 1;
+      margin-right: 4px;
+      border-color: transparent;
       background: transparent;
     }
 
-    .metric:last-child {
-      border-right: 0;
+    .system-summary-bar > .metric:nth-of-type(n + 2) {
+      order: 2;
+    }
+
+    .system-summary-bar > .metric:nth-of-type(n + 2) .metric-label {
+      color: var(--muted);
     }
 
     .metric-label {
       color: var(--muted);
       font-size: 11px;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .metric-value {
       color: var(--ink);
       font-family: var(--font-mono);
-      font-size: 20px;
+      font-size: 12px;
       font-variant-numeric: tabular-nums;
       font-weight: 650;
       line-height: 1;
       letter-spacing: -0.03em;
+    }
+
+    .system-summary-bar > .metric:first-child .metric-value {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .system-summary-bar > .source-cell {
+      display: inline-flex;
+      min-width: 0;
+      align-items: center;
+      flex: 0 1 auto;
+      gap: 5px;
+      min-height: 26px;
+      padding: 4px 7px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-badge);
+    }
+
+    .system-summary-bar > .source-cell:has(#source-name) {
+      order: 0;
+      flex: 1 1 230px;
+      padding-left: 0;
+      border-color: transparent;
+      background: transparent;
+    }
+
+    .system-summary-bar > .source-cell:has(#base-link) {
+      order: 3;
+    }
+
+    .system-summary-bar > .source-cell:has(#source-mode),
+    .system-summary-bar > .source-cell:has(#semantic-mode),
+    .system-summary-bar > .source-cell:has(#public-mode),
+    .system-summary-bar > .source-cell:has(#last-sync) {
+      order: 3;
+      border-color: var(--line);
+      background: var(--surface-subtle);
+    }
+
+    .system-summary-bar > .source-cell:has(#source-mode) {
+      margin-left: auto;
+    }
+
+    .system-summary-bar > #source-select-cell {
+      order: -1;
+      flex-basis: 100%;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+
+    .system-summary-bar .source-label,
+    .system-summary-bar .source-value {
+      display: inline;
+    }
+
+    .system-summary-bar .source-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .system-summary-bar .source-value {
+      min-width: 0;
+      margin-top: 0;
+      overflow: hidden;
+      color: var(--ink-soft);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .system-summary-bar > .source-cell:has(#source-name) .source-value {
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 12px;
+      text-overflow: ellipsis;
+    }
+
+    .system-summary-bar .source-value a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .system-summary-bar .source-value a:hover {
+      text-decoration: underline;
     }
 
     .demo-bar {
@@ -1864,16 +1969,12 @@
         grid-template-columns: 210px minmax(0, 1fr);
       }
 
-      .source-strip {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .system-summary-bar {
+        align-items: stretch;
       }
 
-      .source-cell:nth-child(even) {
-        border-right: 0;
-      }
-
-      .source-cell:nth-child(-n + 4) {
-        border-bottom: 1px solid var(--line);
+      .system-summary-bar > .source-cell:has(#source-name) {
+        flex-basis: 100%;
       }
 
       .form-grid {
@@ -1952,8 +2053,20 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .source-strip {
+      .system-summary-bar {
+        gap: 5px;
         margin-bottom: 8px;
+      }
+
+      .system-summary-bar > .source-cell:has(#source-mode),
+      .system-summary-bar > .source-cell:has(#semantic-mode),
+      .system-summary-bar > .source-cell:has(#public-mode),
+      .system-summary-bar > .source-cell:has(#last-sync) {
+        flex: 1 1 auto;
+      }
+
+      .system-summary-bar > .source-cell:has(#source-mode) {
+        margin-left: 0;
       }
 
       .demo-bar {
@@ -2139,7 +2252,7 @@
       </div>
     </section>
 
-    <section class="metrics" aria-label="当前 Demo 数据统计">
+    <section class="system-summary-bar" id="system-summary-bar" aria-label="系统状态摘要">
       <div class="metric">
         <div class="metric-label">商品数量</div>
         <div class="metric-value" id="metric-products">0</div>
@@ -2160,9 +2273,7 @@
         <div class="metric-label">生成图片</div>
         <div class="metric-value" id="metric-images">0</div>
       </div>
-    </section>
 
-    <section class="source-strip" aria-label="数据源状态">
       <div class="source-cell hidden" id="source-select-cell">
         <label class="source-label" for="source-select">配置数据源</label>
         <select class="source-value" id="source-select"><option value="">演示快照（公开）</option></select>
@@ -2182,6 +2293,10 @@
       <div class="source-cell">
         <span class="source-label">语义复核</span>
         <span class="source-value" id="semantic-mode">正在检测</span>
+      </div>
+      <div class="source-cell">
+        <span class="source-label">公开模式</span>
+        <span class="source-value" id="public-mode">公开只读</span>
       </div>
       <div class="source-cell">
         <span class="source-label">数据更新时间</span>
@@ -2389,6 +2504,7 @@
     const adminModeToggle = document.getElementById("admin-mode-toggle");
     const sourceSelectCell = document.getElementById("source-select-cell");
     const sourceName = document.getElementById("source-name");
+    const publicMode = document.getElementById("public-mode");
     const runtimeHint = document.getElementById("runtime-hint");
     const runButton = document.getElementById("run-button");
     const formActions = document.querySelector(".form-actions");
@@ -2525,6 +2641,7 @@
       readonlyTaskSummary.classList.toggle("hidden", !showReadonlySummary);
       editableTaskFields.classList.toggle("hidden", showReadonlySummary);
       publicReadonlyNote.classList.toggle("hidden", state.isAdminMode || Boolean(state.sourceId));
+      publicMode.textContent = state.isAdminMode ? "管理员模式" : "公开只读";
       modeStatus.textContent = state.isAdminMode ? "数据源接入模式" : "公开演示模式";
       adminModeToggle.textContent = state.isAdminMode ? "退出数据源接入" : "数据源接入";
 
@@ -2544,7 +2661,7 @@
       syncButton.classList.toggle("hidden", !canPending);
       syncButton.disabled = !canPending;
 
-      setText("source-mode", apiOnline ? "实时读取" : "线上快照");
+      setText("source-mode", apiOnline ? "飞书实时读取" : "静态快照");
       setText(
         "semantic-mode",
         runtime?.capabilities?.semantic_review ? "DeepSeek 已启用" : "暂未启用"
