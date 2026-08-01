@@ -130,67 +130,6 @@
       padding: 28px clamp(16px, 3vw, 42px) 44px;
     }
 
-    .intro {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(420px, 0.8fr);
-      gap: 28px;
-      align-items: end;
-      margin-bottom: 24px;
-    }
-
-    .intro h1 {
-      max-width: 720px;
-      margin: 0;
-      color: var(--brand);
-      font-size: clamp(30px, 4vw, 52px);
-      line-height: 1.08;
-      letter-spacing: -0.035em;
-    }
-
-    .intro p {
-      max-width: 620px;
-      margin: 14px 0 0;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.75;
-    }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--surface);
-    }
-
-    .flow-item {
-      min-height: 86px;
-      padding: 16px;
-      border-right: 1px solid var(--line);
-    }
-
-    .flow-item:last-child {
-      border-right: 0;
-    }
-
-    .flow-item strong,
-    .flow-item span {
-      display: block;
-    }
-
-    .flow-item strong {
-      color: var(--brand);
-      font-size: 14px;
-    }
-
-    .flow-item span {
-      margin-top: 7px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-    }
-
     .metrics {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -642,20 +581,17 @@
         font-size: 32px;
       }
 
-      .flow,
       .metrics,
       .workspace {
         grid-template-columns: 1fr;
       }
 
-      .flow-item,
       .metric,
       .pane {
         border-right: 0;
         border-bottom: 1px solid var(--line);
       }
 
-      .flow-item:last-child,
       .metric:last-child,
       .pane:last-child {
         border-bottom: 0;
@@ -975,10 +911,7 @@
     }
 
     .intro {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(520px, 0.72fr);
-      gap: 24px;
-      align-items: center;
+      display: block;
       margin: 0 0 10px;
       padding: 2px 2px 10px;
       border-bottom: 1px solid var(--line);
@@ -987,7 +920,7 @@
     .intro h1 {
       margin: 0;
       color: var(--ink);
-      font-size: clamp(20px, 2vw, 26px);
+      font-size: clamp(20px, 2vw, 24px);
       font-weight: 680;
       line-height: 1.2;
       letter-spacing: -0.025em;
@@ -999,51 +932,6 @@
       color: var(--muted);
       font-size: 12px;
       line-height: 1.6;
-    }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      min-height: 48px;
-      padding: 0;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-panel);
-      background: var(--surface);
-      box-shadow: var(--shadow-subtle);
-    }
-
-    .flow-item {
-      min-width: 0;
-      min-height: 0;
-      padding: 8px 12px;
-      border-right: 1px solid var(--line);
-    }
-
-    .flow-item:last-child {
-      border-right: 0;
-    }
-
-    .flow-item strong,
-    .flow-item span {
-      display: block;
-    }
-
-    .flow-item strong {
-      margin-bottom: 1px;
-      color: var(--ink-soft);
-      font-size: 11px;
-      font-weight: 650;
-    }
-
-    .flow-item span {
-      overflow: hidden;
-      margin: 0;
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.45;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .metrics {
@@ -1957,10 +1845,6 @@
         gap: 8px;
       }
 
-      .flow {
-        min-height: 44px;
-      }
-
       .workspace {
         grid-template-columns: 210px minmax(0, 1fr);
       }
@@ -2042,23 +1926,6 @@
 
       .intro p {
         font-size: 11px;
-      }
-
-      .flow {
-        grid-template-columns: 1fr;
-      }
-
-      .flow-item {
-        display: grid;
-        grid-template-columns: 88px minmax(0, 1fr);
-        gap: 8px;
-        padding: 6px 9px;
-        border-right: 0;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .flow-item:last-child {
-        border-bottom: 0;
       }
 
       .metrics {
@@ -2209,20 +2076,6 @@
       <div>
         <h1 id="page-title">电商营销素材合规与生成 Agent</h1>
         <p>连接飞书 Base，自动读取商品资料和营销任务，完成营销素材风险审查与自动生成。</p>
-      </div>
-      <div class="flow" aria-label="处理流程">
-        <div class="flow-item">
-          <strong>提交任务</strong>
-          <span>价格、日期、比例与营销文案</span>
-        </div>
-        <div class="flow-item">
-          <strong>合规审查</strong>
-          <span>识别价格、日期与文案风险</span>
-        </div>
-        <div class="flow-item">
-          <strong>确定性组装</strong>
-          <span>生成并下载营销图片</span>
-        </div>
       </div>
     </section>
 

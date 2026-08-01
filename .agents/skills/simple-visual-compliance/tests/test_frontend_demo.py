@@ -68,6 +68,11 @@ class FrontendDemoContractTests(unittest.TestCase):
     def test_static_demo_is_truthful_and_local_execution_remains_available(self) -> None:
         self.assertIn("电商营销素材合规与生成 Agent", self.html)
         self.assertIn("连接飞书 Base，自动读取商品资料和营销任务，完成营销素材风险审查与自动生成。", self.html)
+        intro = self.html.split('<section class="intro"', 1)[1].split("</section>", 1)[0]
+        self.assertNotIn('class="flow"', intro)
+        self.assertNotIn("提交任务", intro)
+        self.assertNotIn("合规审查", intro)
+        self.assertNotIn("确定性组装", intro)
         self.assertIn("体验 Demo", self.html)
         self.assertIn("运行 Agent", self.html)
         self.assertIn("读取商品资料", self.html)
