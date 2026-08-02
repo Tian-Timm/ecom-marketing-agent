@@ -13,6 +13,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = SKILL_DIR.parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from src.template_system import TemplateRepository, render_template
 MOCK_ASSETS_DIR = SKILL_DIR / "assets" / "images"
 BACKGROUNDS_DIR = SKILL_DIR / "assets" / "backgrounds"
 
@@ -97,84 +100,9 @@ def assemble_single_image(rec: Dict[str, Any], output_dir: Path) -> Dict[str, An
     if rec.get("promo_price") in (None, ""):
         raise ValueError("组装图片前必须提供活动价")
 
-    product_path = Path(str(rec.get("product_image_path") or PRODUCT_IMG_PATH))
-    logo_path = Path(str(rec.get("logo_image_path") or LOGO_IMG_PATH))
-    require_assets(product_path, logo_path)
-    width, height = ALLOWED_RATIOS[aspect_ratio]
-    canvas = Image.open(STAND_BG_PATH).convert("RGBA").resize((width, height))
-
-    logo = Image.open(logo_path).convert("RGBA")
-    logo_w = 120 if width == 600 else 140
-    logo_h = int(logo.height * (logo_w / logo.width))
-    logo = logo.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
-    canvas.paste(logo, (24, 24), logo)
-
-    prod = Image.open(product_path).convert("RGBA")
-    prod_h = 400 if width == 600 else 440
-    prod_w = int(prod.width * (prod_h / prod.height))
-    prod = prod.resize((prod_w, prod_h), Image.Resampling.LANCZOS)
-    prod_x = (width - prod_w) // 2
-    canvas.paste(prod, (prod_x, 160), prod)
-
-    draw = ImageDraw.Draw(canvas)
-
-    promo_price = rec.get("promo_price")
-    price_num = float(promo_price)
-    price_val_str = str(int(price_num)) if price_num.is_integer() else f"{price_num:g}"
-    
-    font_price_label = get_font(18 if width == 600 else 20)
-    font_price_num = get_font(36 if width == 600 else 42, bold=True)
-    
-    y_start = height - 160
-    draw.text((24, y_start + 20), "到手价", fill=(140, 77, 0), font=font_price_label)
-    draw.text((24, y_start + 55), f"￥{price_val_str}", fill=(0, 0, 0), font=font_price_num)
-
-    main_text = str(rec.get("main_text") or "").strip()
-    if main_text:
-        copy_left = 220 if width == 600 else 310
-        copy_width = width - copy_left - 24
-        font_main_text = fit_font(
-            draw,
-            main_text,
-            max_width=copy_width,
-            start_size=28 if width == 600 else 36,
-        )
-        x_center = copy_left + copy_width // 2
-        draw.text((x_center, y_start + 80), main_text, fill=(255, 255, 255), font=font_main_text, anchor="mm")
-
-    badge_text = "爆款推荐"
-    badge_left, badge_top, badge_right, badge_bottom = find_red_badge_bounds(canvas)
-    badge_padding = 10
-    font_badge = fit_font(
-        draw,
-        badge_text,
-        max_width=badge_right - badge_left - badge_padding * 2,
-        start_size=18 if width == 600 else 22,
-        min_size=14,
-    )
-    badge_center = (
-        (badge_left + badge_right) // 2,
-        (badge_top + badge_bottom) // 2,
-    )
-    draw.text(
-        badge_center,
-        badge_text,
-        fill=(255, 255, 255),
-        font=font_badge,
-        anchor="mm",
-    )
-
-    output_dir.mkdir(parents=True, exist_ok=True)
-    task_id = safe_task_id(rec.get("task_id"))
-    filename = f"{task_id}_rendered.png"
-    out_file = output_dir / filename
-    canvas.convert("RGB").save(out_file, "PNG", optimize=True)
-    return {
-        "filename": filename,
-        "width": width,
-        "height": height,
-        "format": "PNG",
-    }
+    # Layout selection is deterministic and comes solely from the validated
+    # internal template.  Keep this function as the legacy pipeline seam.
+    return render_template(rec, output_dir, repository=TemplateRepository())
 
 def assemble_batch(records: List[Dict[str, Any]], output_dir: Path) -> List[Dict[str, Any]]:
     updated: List[Dict[str, Any]] = []

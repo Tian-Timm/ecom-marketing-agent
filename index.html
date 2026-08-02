@@ -229,6 +229,18 @@
       color: var(--ink-soft);
     }
 
+    .template-manager { position: fixed; z-index: 30; inset: 0; overflow: auto; padding: 18px; background: var(--page); }
+    .template-manager-shell { display: grid; grid-template-columns: minmax(180px, .8fr) minmax(360px, 1.8fr) minmax(220px, .9fr); gap: 14px; max-width: 1440px; margin: 0 auto; }
+    .template-panel { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--surface); }
+    .template-panel h2 { margin: 0 0 12px; font-size: 14px; }
+    .template-list { display: grid; gap: 7px; margin-bottom: 10px; }
+    .template-list button { width: 100%; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface-subtle); text-align: left; }
+    .template-canvas-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border: 1px dashed var(--line-strong); background: #ece9df; }
+    #template-canvas { width: 100%; height: 100%; touch-action: none; }
+    .template-toolbar { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+    .template-preview { width: 100%; max-height: 260px; margin-top: 12px; object-fit: contain; border: 1px solid var(--line); }
+    @media (max-width: 900px) { .template-manager-shell { grid-template-columns: 1fr; } .template-manager { padding: 10px; } }
+
     .demo-pipeline {
       display: flex;
       align-items: center;
@@ -1504,6 +1516,7 @@
       </div>
     </div>
     <div class="topbar-status" style="display: flex; align-items: center; gap: 10px;">
+      <button class="secondary hidden" id="template-manager-entry" type="button" title="模板管理工作台">模板管理</button>
       <span class="connection" id="mode-status">公开只读</span>
       <div class="connection" id="connection-status">正在连接</div>
     </div>
@@ -1740,6 +1753,14 @@
     </form>
   </dialog>
 
+  <section class="template-manager hidden" id="template-manager" aria-label="模板管理">
+    <div class="template-manager-shell">
+      <aside class="template-panel"><h2>模板列表</h2><div class="template-list" id="template-list"></div><button class="secondary" id="new-template" type="button">新建模板</button></aside>
+      <section class="template-panel"><div style="display:flex;justify-content:space-between;gap:8px"><h2>背景与区域</h2><button class="secondary" id="close-template-manager" type="button">返回任务页</button></div><div class="template-canvas-wrap"><canvas id="template-canvas" width="800" height="800"></canvas></div><div class="template-toolbar"><input id="template-background" type="file" accept="image/png,image/jpeg"><button class="secondary" id="add-template-layer" type="button">添加区域</button><button class="secondary" id="delete-template-layer" type="button">删除区域</button></div><p id="template-storage-note" class="runtime-hint"></p><img class="template-preview hidden" id="template-preview" alt="模板测试生成结果"></section>
+      <aside class="template-panel"><h2>区域配置</h2><div class="field"><label for="template-id">模板 ID</label><input id="template-id" autocomplete="off"></div><div class="field"><label for="template-name">模板名称</label><input id="template-name"></div><div class="field"><label for="template-ratio">画布比例</label><select id="template-ratio"><option value="1:1">1:1</option><option value="3:4">3:4</option></select></div><div class="field"><label for="template-test-task">测试任务</label><select id="template-test-task"><option value="">请选择测试任务</option></select></div><div class="field"><label for="layer-type">区域类型</label><select id="layer-type"><option value="product_image">商品图片</option><option value="logo">品牌 Logo</option><option value="main_text">主文案</option><option value="promo_price">活动价格</option></select></div><div class="field"><label for="layer-fit">图片适配</label><select id="layer-fit"><option value="contain">contain</option><option value="cover">cover</option></select></div><div class="field"><label for="layer-align">文字对齐</label><select id="layer-align"><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select></div><div class="field"><label for="layer-max-font">最大字号</label><input id="layer-max-font" type="number" min="8" max="160" value="36"></div><div class="field"><label for="layer-min-font">最小字号</label><input id="layer-min-font" type="number" min="8" max="160" value="18"></div><div class="field"><label for="layer-max-lines">最大行数</label><input id="layer-max-lines" type="number" min="1" max="6" value="2"></div><div class="field"><label for="layer-color">文字颜色</label><input id="layer-color" type="color" value="#ffffff"></div><div class="template-toolbar"><button class="secondary" id="test-template" type="button">测试生成</button><button class="secondary" id="save-template" type="button">保存草稿</button><button class="primary" id="publish-template" type="button">发布模板</button></div><p id="template-test-result" class="runtime-hint"></p></aside>
+    </div>
+  </section>
+
   <script>
     const state = {
       records: [],
@@ -1775,6 +1796,7 @@
     const connectionStatus = document.getElementById("connection-status");
     const modeStatus = document.getElementById("mode-status");
     const adminModeToggle = document.getElementById("admin-mode-toggle");
+    const templateManagerEntry = document.getElementById("template-manager-entry");
     const sourceSelectCell = document.getElementById("source-select-cell");
     const sourceName = document.getElementById("source-name");
     const runtimeHint = document.getElementById("runtime-hint");
@@ -1798,6 +1820,7 @@
     const activateButton = document.getElementById("activate-button");
     const onboardingPanel = document.getElementById("onboarding-panel");
     const onboarding = {sourceId: document.getElementById("onboarding-source-id"), displayName: document.getElementById("onboarding-display-name"), base: document.getElementById("onboarding-base"), credential: document.getElementById("onboarding-credential"), revision: document.getElementById("onboarding-revision"), reference: document.getElementById("onboarding-reference"), snapshot: null, draftRevision: null};
+    const templateEditor = {templates: [], current: null, selected: 0, backgroundUrl: "", drag: null};
 
     function setText(id, value) {
       document.getElementById(id).textContent = String(value ?? "");
@@ -1915,6 +1938,7 @@
       publicReadonlyNote.classList.toggle("hidden", state.isAdminMode || Boolean(state.sourceId));
       modeStatus.textContent = state.isAdminMode ? "数据源接入模式" : "公开只读";
       adminModeToggle.textContent = state.isAdminMode ? "退出数据源接入" : "管理员入口";
+      templateManagerEntry.classList.toggle("hidden", !state.isAdminMode);
 
       Object.values(fields).forEach((field) => {
         field.disabled = true;
@@ -2650,8 +2674,28 @@
       await executeSelectedTask();
     }
 
+    function defaultTemplate() { const id=`template-${Date.now().toString(36)}`; return {schema_version:"1.0",template_id:id,name:"未命名模板",version:1,status:"DRAFT",supported_ratios:["1:1"],background:{asset:""},layers:[{type:"product_image",field:"product_image_path",rect:{x:.2,y:.2,width:.6,height:.48},fit:"contain"},{type:"main_text",field:"main_text",rect:{x:.1,y:.72,width:.8,height:.12},max_font_size:36,min_font_size:18,max_lines:2,color:"#FFFFFF",align:"center"},{type:"promo_price",field:"promo_price",rect:{x:.05,y:.86,width:.3,height:.1},max_font_size:42,min_font_size:18,max_lines:1,color:"#000000",align:"left"}]}; }
+    function resetTemplateEditor() { if(templateEditor.backgroundUrl)URL.revokeObjectURL(templateEditor.backgroundUrl);templateEditor.templates=[];templateEditor.current=null;templateEditor.selected=0;templateEditor.backgroundUrl="";templateEditor.drag=null;document.getElementById("template-manager").classList.add("hidden");const preview=document.getElementById("template-preview");preview.classList.add("hidden");preview.removeAttribute("src");document.getElementById("template-background").value="";document.getElementById("template-test-task").replaceChildren(new Option("请选择测试任务", ""));document.getElementById("template-test-result").textContent=""; }
+    function applyCanvasRatio(item) { const canvas=document.getElementById("template-canvas"),wrap=canvas.parentElement,ratio=item?.supported_ratios?.[0]||"1:1",size=ratio==="3:4"?{width:600,height:800}:{width:800,height:800};canvas.width=size.width;canvas.height=size.height;wrap.style.aspectRatio=`${size.width} / ${size.height}`; }
+    function currentLayer(){return templateEditor.current?.layers?.[templateEditor.selected]||null;}
+    function syncLayerFields(){const layer=currentLayer();if(!layer)return;document.getElementById("template-id").value=templateEditor.current.template_id;document.getElementById("template-name").value=templateEditor.current.name;document.getElementById("template-ratio").value=templateEditor.current.supported_ratios[0];document.getElementById("layer-type").value=layer.type;document.getElementById("layer-fit").value=layer.fit||"contain";document.getElementById("layer-align").value=layer.align||"center";document.getElementById("layer-max-font").value=layer.max_font_size||36;document.getElementById("layer-min-font").value=layer.min_font_size||18;document.getElementById("layer-max-lines").value=layer.max_lines||2;document.getElementById("layer-color").value=layer.color||"#ffffff";}
+    function drawTemplateLayers(ctx,item){if(!item)return;item.layers.forEach((layer,index)=>{const r=layer.rect,x=r.x*ctx.canvas.width,y=r.y*ctx.canvas.height,w=r.width*ctx.canvas.width,h=r.height*ctx.canvas.height;ctx.strokeStyle=index===templateEditor.selected?"#0d6efd":"#244638";ctx.lineWidth=index===templateEditor.selected?4:2;ctx.strokeRect(x,y,w,h);ctx.fillStyle="rgba(36,70,56,.10)";ctx.fillRect(x,y,w,h);ctx.fillStyle="#244638";ctx.font="16px sans-serif";ctx.fillText(({product_image:"商品图片",logo:"品牌 Logo",main_text:"主文案",promo_price:"活动价格"})[layer.type],x+6,y+20);});}
+    function drawTemplateCanvas(){const canvas=document.getElementById("template-canvas"),ctx=canvas.getContext("2d"),item=templateEditor.current;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.fillStyle="#e6e1d5";ctx.fillRect(0,0,canvas.width,canvas.height);if(templateEditor.backgroundUrl){const image=new Image();image.onload=()=>{ctx.drawImage(image,0,0,canvas.width,canvas.height);drawTemplateLayers(ctx,item);};image.src=templateEditor.backgroundUrl;}else drawTemplateLayers(ctx,item);}
+    function populateTemplateTestTasks(){const select=document.getElementById("template-test-task"),old=select.value;select.replaceChildren(new Option("请选择测试任务", ""));state.records.forEach((record)=>select.add(new Option(`${record.task_id} · ${record.main_text||"无主文案"}`,record.task_id)));select.value=old;}
+    async function loadTemplateBackground(templateId,asset){if(templateEditor.backgroundUrl)URL.revokeObjectURL(templateEditor.backgroundUrl);templateEditor.backgroundUrl="";if(!asset){drawTemplateCanvas();return;}const response=await fetch(`/api/template_background?template_id=${encodeURIComponent(templateId)}`,{headers:{"X-Demo-Admin-Token":state.adminToken}});if(!response.ok)throw new Error("模板背景读取失败");templateEditor.backgroundUrl=URL.createObjectURL(await response.blob());}
+    function selectTemplate(item){templateEditor.current=structuredClone(item);templateEditor.selected=0;applyCanvasRatio(templateEditor.current);syncLayerFields();loadTemplateBackground(item.template_id,item.background?.asset).then(drawTemplateCanvas).catch((error)=>showToast(error.message,true));}
+    function renderTemplateList(){const list=document.getElementById("template-list");list.replaceChildren();templateEditor.templates.forEach((item)=>{const button=document.createElement("button");button.textContent=`${item.name} / v${item.version} · ${item.status}`;button.addEventListener("click",()=>selectTemplate(item));list.appendChild(button);});}
+    async function loadTemplates(){const data=await fetchJson("/api/templates",{headers:{"X-Demo-Admin-Token":state.adminToken}});templateEditor.templates=data.templates||[];document.getElementById("template-storage-note").textContent=data.can_write?"本地持久化模板存储已启用。":"当前部署未配置持久化模板存储；内置模板仍可用于演示。";renderTemplateList();}
+    async function openTemplateManager(){if(!state.isAdminMode||!state.adminToken)return;document.getElementById("template-manager").classList.remove("hidden");await loadTemplates();populateTemplateTestTasks();if(!templateEditor.current)selectTemplate(templateEditor.templates[0]||defaultTemplate());}
+    function editorPayload(){const item=structuredClone(templateEditor.current);item.template_id=document.getElementById("template-id").value.trim();item.name=document.getElementById("template-name").value.trim();item.supported_ratios=[document.getElementById("template-ratio").value];return item;}
+    async function saveTemplateDraft(){const data=await fetchJson("/api/template_save",{method:"POST",headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken},body:JSON.stringify({template:editorPayload()})});templateEditor.current=data.template;await loadTemplates();showToast("模板草稿已保存。");}
+    async function publishTemplate(){await saveTemplateDraft();const data=await fetchJson("/api/template_publish",{method:"POST",headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken},body:JSON.stringify({template_id:templateEditor.current.template_id})});templateEditor.current=data.template;await loadTemplates();showToast("模板已发布，可用于正式任务。");}
+    async function testTemplate(){await saveTemplateDraft();const taskId=document.getElementById("template-test-task").value,record=state.records.find((item)=>item.task_id===taskId);if(!record){showToast("请明确选择一条已有任务作为测试数据。",true);return;}try{const data=await fetchJson("/api/template_test",{method:"POST",headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken},body:JSON.stringify({template_id:templateEditor.current.template_id,record})});const image=document.getElementById("template-preview");image.src=data.public_image_data_url;image.classList.remove("hidden");document.getElementById("template-test-result").textContent="测试生成成功。";}catch(error){document.getElementById("template-test-result").textContent=error.message||"测试生成失败。";}}
+    function updateSelectedLayer(){const layer=currentLayer();if(!layer)return;const type=document.getElementById("layer-type").value;layer.type=type;layer.field={product_image:"product_image_path",logo:"logo_image_path",main_text:"main_text",promo_price:"promo_price"}[type];if(type==="product_image"||type==="logo"){delete layer.max_font_size;delete layer.min_font_size;delete layer.max_lines;delete layer.color;delete layer.align;layer.fit=document.getElementById("layer-fit").value||"contain";}else{delete layer.fit;Object.assign(layer,{max_font_size:Number(document.getElementById("layer-max-font").value)||36,min_font_size:Number(document.getElementById("layer-min-font").value)||18,max_lines:Number(document.getElementById("layer-max-lines").value)||(type==="promo_price"?1:2),color:document.getElementById("layer-color").value||"#FFFFFF",align:document.getElementById("layer-align").value||"center"});}drawTemplateCanvas();}
+
     async function toggleAdminMode() {
       if (state.isAdminMode) {
+        resetTemplateEditor();
         state.isAdminMode = false;
         state.adminToken = "";
         state.sourceId = "";
@@ -2671,6 +2715,20 @@
     }
 
     adminModeToggle.addEventListener("click", toggleAdminMode);
+    templateManagerEntry.addEventListener("click",()=>openTemplateManager().catch((error)=>showToast(error.message,true)));
+    document.getElementById("close-template-manager").addEventListener("click",()=>document.getElementById("template-manager").classList.add("hidden"));
+    document.getElementById("new-template").addEventListener("click",()=>selectTemplate(defaultTemplate()));
+    document.getElementById("add-template-layer").addEventListener("click",()=>{if(!templateEditor.current)return;templateEditor.current.layers.push({type:"logo",field:"logo_image_path",rect:{x:.05,y:.05,width:.2,height:.1},fit:"contain"});templateEditor.selected=templateEditor.current.layers.length-1;syncLayerFields();drawTemplateCanvas();});
+    document.getElementById("delete-template-layer").addEventListener("click",()=>{if(templateEditor.current?.layers.length>3){templateEditor.current.layers.splice(templateEditor.selected,1);templateEditor.selected=0;syncLayerFields();drawTemplateCanvas();}});
+    ["layer-type","layer-fit","layer-align","layer-max-font","layer-min-font","layer-max-lines","layer-color"].forEach((id)=>document.getElementById(id).addEventListener("change",updateSelectedLayer));
+    document.getElementById("template-ratio").addEventListener("change",()=>{if(!templateEditor.current)return;templateEditor.current.supported_ratios=[document.getElementById("template-ratio").value];applyCanvasRatio(templateEditor.current);drawTemplateCanvas();});
+    document.getElementById("save-template").addEventListener("click",()=>saveTemplateDraft().catch((error)=>showToast(error.message,true)));
+    document.getElementById("publish-template").addEventListener("click",()=>publishTemplate().catch((error)=>showToast(error.message,true)));
+    document.getElementById("test-template").addEventListener("click",testTemplate);
+    document.getElementById("template-background").addEventListener("change",async(event)=>{const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=async()=>{try{const data=await fetchJson("/api/template_upload",{method:"POST",headers:{"Content-Type":"application/json","X-Demo-Admin-Token":state.adminToken},body:JSON.stringify({filename:file.name,data_url:reader.result})});if(templateEditor.backgroundUrl)URL.revokeObjectURL(templateEditor.backgroundUrl);templateEditor.backgroundUrl=URL.createObjectURL(file);templateEditor.current.background.asset=data.asset;drawTemplateCanvas();showToast("背景已上传。");}catch(error){showToast(error.message||"背景上传失败。",true);}};reader.readAsDataURL(file);});
+    document.getElementById("template-canvas").addEventListener("pointerdown",(event)=>{const item=templateEditor.current;if(!item)return;const rect=event.currentTarget.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width,y=(event.clientY-rect.top)/rect.height;let choice=-1;item.layers.forEach((layer,index)=>{const r=layer.rect;if(x>=r.x&&x<=r.x+r.width&&y>=r.y&&y<=r.y+r.height)choice=index;});if(choice<0)return;templateEditor.selected=choice;const r=currentLayer().rect;templateEditor.drag={x,y,resize:Math.abs(x-(r.x+r.width))<.03&&Math.abs(y-(r.y+r.height))<.03,rect:structuredClone(r)};event.currentTarget.setPointerCapture(event.pointerId);syncLayerFields();drawTemplateCanvas();});
+    document.getElementById("template-canvas").addEventListener("pointermove",(event)=>{if(!templateEditor.drag)return;const rect=event.currentTarget.getBoundingClientRect(),x=(event.clientX-rect.left)/rect.width,y=(event.clientY-rect.top)/rect.height,drag=templateEditor.drag,r=currentLayer().rect;if(drag.resize){r.width=Math.max(.04,Math.min(1-r.x,drag.rect.width+x-drag.x));r.height=Math.max(.04,Math.min(1-r.y,drag.rect.height+y-drag.y));}else{r.x=Math.max(0,Math.min(1-r.width,drag.rect.x+x-drag.x));r.y=Math.max(0,Math.min(1-r.height,drag.rect.y+y-drag.y));}drawTemplateCanvas();});
+    document.getElementById("template-canvas").addEventListener("pointerup",()=>{templateEditor.drag=null;});
     document.getElementById("task-form").addEventListener("submit", runTask);
     document.getElementById("new-button").addEventListener("click", newTask);
     document.getElementById("refresh-button").addEventListener("click", loadRecords);
@@ -2686,13 +2744,18 @@
     document.getElementById("admin-form").addEventListener("submit", async (event) => {
       event.preventDefault();
       const token = adminTokenInput.value.trim();
-      adminTokenInput.value = "";
-      adminDialog.close();
-      if (!token) return;
+      if (!token) {
+        showToast("请输入管理员令牌。", true);
+        return;
+      }
+      const submitButton = event.target.querySelector("button[type='submit']");
+      if (submitButton) submitButton.disabled = true;
       try {
         const payload = await fetchJson("/api/sources", {
           headers: {"X-Demo-Admin-Token": token}
         });
+        adminTokenInput.value = "";
+        adminDialog.close();
         state.adminToken = token;
         state.isAdminMode = true;
         state.activeRevisions = Object.fromEntries(
@@ -2724,7 +2787,9 @@
       } catch (error) {
         state.adminToken = "";
         state.isAdminMode = false;
-        showToast("数据源接入验证失败。", true);
+        showToast(error.message || "管理员令牌验证失败。", true);
+      } finally {
+        if (submitButton) submitButton.disabled = false;
       }
     });
     demoCases.forEach((button) => {

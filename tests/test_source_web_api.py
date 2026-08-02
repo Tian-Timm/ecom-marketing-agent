@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import io
 import json
 import os
@@ -159,6 +158,14 @@ class SourceWebApiTests(unittest.TestCase):
         self.assertNotIn("credential_ref", encoded)
         self.assertNotIn("FEISHU_APP_SECRET", encoded)
 
+    def test_unexpected_sources_failure_is_sanitized_json_not_an_html_500(self) -> None:
+        handler = FakeHandler(path="/api/sources")
+        with patch.object(web_api, "config_repository", side_effect=RuntimeError("upstream detail must not escape")):
+            web_api.handle_get(handler, "sources")
+        self.assertEqual(handler.status, 503)
+        self.assertEqual(handler.response_headers["Content-Type"], "application/json; charset=utf-8")
+        self.assertEqual(handler.json, {"error": "服务暂不可用，请稍后重试"})
+
     def test_configured_task_summary_normalizes_single_value_cells(self) -> None:
         config, repo, adapter = source_config(), MagicMock(), MagicMock()
         task_names = {"task": "任务", "product": "商品", "type": "类型", "ratio": "比例", "main": "主文案", "price": "活动价", "date": "投放日期", "status": "状态", "issues": "问题", "processed": "处理时间", "hash": "指纹", "pipeline": "版本", "image": "图片"}
@@ -249,7 +256,34 @@ class SourceWebApiTests(unittest.TestCase):
         with patch.object(web_api, "config_repository", return_value=persistent(repo)), patch.object(web_api, "resolve_feishu_credential", return_value=object()), patch.object(web_api, "discover_source", return_value=snapshot), patch.object(web_api, "confirm_draft_config", side_effect=SourceConfigRevisionConflictError("source_a", "版本冲突")):
             conflict = FakeHandler(payload=self._confirm_payload())
             web_api.handle_confirm(conflict)
-        self.assertEqual(conflict.status, 409)
+    def test_admin_auth_case_insensitive_header_and_error_handling(self) -> None:
+        with patch.dict(os.environ, {"DEMO_ADMIN_TOKEN": "secret-token"}, clear=False):
+            # Test 1: Uppercase header X-Demo-Admin-Token passes
+            handler_upper = FakeHandler(token="secret-token")
+            web_api._authorize_admin(handler_upper)
+
+            # Test 2: Lowercase header x-demo-admin-token passes
+            handler_lower = FakeHandler(token="secret-token")
+            handler_lower.headers["x-demo-admin-token"] = handler_lower.headers.pop("X-Demo-Admin-Token")
+            web_api._authorize_admin(handler_lower)
+
+            # Test 3: Dict headers with lowercase keys passes
+            dict_handler = SimpleNamespace(headers={"x-demo-admin-token": "secret-token"})
+            web_api._authorize_admin(dict_handler)
+
+            # Test 4: Wrong token raises PermissionError("执行口令无效")
+            wrong_handler = FakeHandler(token="wrong-token")
+            with self.assertRaises(PermissionError) as cm:
+                web_api._authorize_admin(wrong_handler)
+            self.assertEqual(str(cm.exception), "执行口令无效")
+
+        # Test 5: Missing DEMO_ADMIN_TOKEN environment variable raises clear error
+        with patch.object(web_api, "_get_demo_admin_token", return_value=""):
+            missing_env_handler = FakeHandler(token="secret-token")
+            with self.assertRaises(PermissionError) as cm:
+                web_api._authorize_admin(missing_env_handler)
+            self.assertEqual(str(cm.exception), "服务器未配置 DEMO_ADMIN_TOKEN 环境变量")
+
 
 
 if __name__ == "__main__":

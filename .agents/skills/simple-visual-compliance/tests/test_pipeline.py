@@ -79,6 +79,16 @@ class RuleAuditTests(unittest.TestCase):
             self.assertFalse(stale.exists())
             self.assertIsNone(result["generated_image"])
 
+    def test_configured_context_keeps_missing_builtin_materials_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = execute_task(
+                valid_record(_render_context="configured"), Path(temp_dir),
+                rules=self.rules, semantic_reviewer=None,
+            )
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertIsNone(result["generated_image"])
+            self.assertIn("TEMPLATE_ASSET_MISSING", {item["code"] for item in result["violations"]})
+
 
 class PipelineTests(unittest.TestCase):
     def test_execute_task_returns_auditable_result_contract(self) -> None:

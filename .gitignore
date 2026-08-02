@@ -18,3 +18,6 @@ __pycache__/
 output_images/
 generated_output/feishu_dry_run_result.json
 runtime/source_configs/
+runtime/templates/
+
+.env*

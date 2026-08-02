@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "template_id": "classic-stand",
+  "name": "经典展台",
+  "version": 1,
+  "status": "PUBLISHED",
+  "supported_ratios": ["1:1", "3:4"],
+  "background": {"asset": "../backgrounds/stand_3d_bg.png", "badge_text": "爆款推荐"},
+  "layers": [
+    {"type": "logo", "field": "logo_image_path", "rect": {"x": 0.03, "y": 0.03, "width": 0.175, "height": 0.10}, "fit": "contain"},
+    {"type": "product_image", "field": "product_image_path", "rect": {"x": 0.18, "y": 0.20, "width": 0.64, "height": 0.55}, "fit": "contain"},
+    {"type": "promo_price", "field": "promo_price", "rect": {"x": 0.03, "y": 0.76, "width": 0.26, "height": 0.12}, "max_font_size": 42, "min_font_size": 18, "max_lines": 1, "color": "#000000", "align": "left"},
+    {"type": "main_text", "field": "main_text", "rect": {"x": 0.39, "y": 0.80, "width": 0.58, "height": 0.12}, "max_font_size": 36, "min_font_size": 18, "max_lines": 2, "color": "#FFFFFF", "align": "center"}
+  ]
+}

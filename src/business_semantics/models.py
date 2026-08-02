@@ -349,6 +349,9 @@ class StandardMarketingTask:
     campaign_start: str | None = None
     campaign_end: str | None = None
     promo_price: float | None = None
+    # Optional so already-active source configurations remain valid.  The
+    # renderer resolves an empty value to the published built-in template.
+    template_id: str | None = None
 
     def key_for(self, source_id: str) -> TaskKey:
         return TaskKey(source_id, self.task_id)

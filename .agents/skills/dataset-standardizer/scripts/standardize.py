@@ -27,6 +27,7 @@ COLUMN_ALIASES: Dict[str, List[str]] = {
     "campaign_name": ["活动名称", "活动", "campaign_name"],
     "campaign_start": ["活动开始日期", "活动开始时间", "开始日期", "campaign_start"],
     "campaign_end": ["活动结束日期", "活动结束时间", "结束日期", "campaign_end"],
+    "template_id": ["模板", "模板ID", "设计模板", "template_id"],
 }
 
 def clean_number(val: Any) -> float | None:
@@ -84,6 +85,11 @@ def sanitize_record(raw_rec: Dict[str, Any], index: int) -> Dict[str, Any]:
 
     campaign_end = record.get("campaign_end") or ""
     record["campaign_end"] = str(campaign_end).strip()
+
+    # Missing selections intentionally remain blank here.  The template loader
+    # resolves that to the built-in default, keeping this normalizer independent
+    # from rendering assets while preserving an explicitly supplied value.
+    record["template_id"] = str(record.get("template_id") or "").strip()
 
     return record
 

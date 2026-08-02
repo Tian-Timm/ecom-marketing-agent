@@ -14,6 +14,7 @@ from .errors import SourceConfigValidationError
 from .models import PreparedTask
 from .repository import SourceConfigRepository
 from .runtime import ConfiguredSourceRuntime, FeishuDataGateway
+from ..template_system import DEFAULT_TEMPLATE_ID, TemplateError, TemplateRepository
 
 
 TERMINAL_BASE_STATUSES = {"审查通过", "需修改", "待人工复核", "执行失败"}
@@ -59,10 +60,11 @@ def _scalar(value: Any) -> str:
     return str(value or "")
 
 
-def _execution_fingerprint(prepared: PreparedTask, *, rules_version: str, template_version: str) -> str:
+def _execution_fingerprint(prepared: PreparedTask, *, rules_version: str, pipeline_version: str, template_version: str) -> str:
     payload = {
         "prepared_input_fingerprint": prepared.input_fingerprint,
         "rules_version": rules_version,
+        "pipeline_version": pipeline_version,
         "template_version": template_version,
     }
     return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
@@ -76,6 +78,11 @@ def _canonical_record(prepared: PreparedTask, material_paths: Mapping[str, str])
         "deploy_date": task.deploy_date, "campaign_name": task.campaign_name or "",
         "campaign_start": task.campaign_start or "", "campaign_end": task.campaign_end or "",
         "promo_price": task.promo_price, "main_text": task.main_text, "sub_text": task.sub_text,
+        "template_id": task.template_id or DEFAULT_TEMPLATE_ID,
+        # This marker is introduced only after source configuration, exact
+        # record selection and media download have succeeded.  It is not a
+        # public request field and disables demo fixture assets at rendering.
+        "_render_context": "configured",
         **material_paths,
     }
 
@@ -100,9 +107,12 @@ class ConfiguredSourceOrchestrator:
         self._output_root = output_root
         self._executor = pipeline_executor or _existing_executor
         self._reviewer = semantic_reviewer
-        default_rules, default_template = _default_versions() if pipeline_executor is None and (rules_version is None or template_version is None) else ("injected", "injected")
+        default_rules, default_pipeline = _default_versions() if pipeline_executor is None else ("injected", "injected")
         self._rules_version = rules_version or default_rules
-        self._template_version = template_version or default_template
+        self._pipeline_version = default_pipeline
+        # Kept only as an injection seam for existing orchestration tests.  A
+        # real run derives this from the resolved Template entity below.
+        self._template_version_override = template_version
 
     def _writeback_metadata(self, prepared: PreparedTask) -> tuple[dict[str, str], Mapping[str, Any]]:
         config = self._repository.get_active(prepared.source_id)
@@ -156,7 +166,20 @@ class ConfiguredSourceOrchestrator:
         prepared = self._runtime.prepare_task(source_id, task_id)
         config = self._repository.get_active(source_id)
         writeback_names, existing_fields = self._writeback_metadata(prepared)
-        execution_hash = _execution_fingerprint(prepared, rules_version=self._rules_version, template_version=self._template_version)
+        try:
+            resolved_template = TemplateRepository().resolve(prepared.task.template_id)
+            template_marker = f"{resolved_template['template_id']}:v{resolved_template['version']}"
+        except TemplateError as exc:
+            resolved_template = None
+            template_marker = f"{prepared.task.template_id or DEFAULT_TEMPLATE_ID}:unresolved"
+            template_error = exc
+        else:
+            template_error = None
+        execution_hash = _execution_fingerprint(
+            prepared, rules_version=self._rules_version,
+            pipeline_version=self._pipeline_version,
+            template_version=self._template_version_override or template_marker,
+        )
         existing_hash = _scalar(existing_fields.get(writeback_names["input_hash"]))
         existing_status = _scalar(existing_fields.get(writeback_names["status"]))
         if not force and existing_hash == execution_hash and existing_status in TERMINAL_BASE_STATUSES:
@@ -168,6 +191,8 @@ class ConfiguredSourceOrchestrator:
                 "receipt": prepared.receipt, "issues": existing_fields.get(writeback_names["issues"]),
                 "processed_at": existing_fields.get(writeback_names["processed_at"]),
                 "pipeline_version": existing_fields.get(writeback_names["pipeline_version"]),
+                "template": ({key: resolved_template[key] for key in ("template_id", "name", "version", "status")} if resolved_template else None),
+                "template_id": resolved_template["template_id"] if resolved_template else prepared.task.template_id or DEFAULT_TEMPLATE_ID,
                 "image_attachment": existing_fields.get(writeback_names["image_attachment"]) if "image_attachment" in writeback_names else None,
                 "image_url": existing_fields.get(writeback_names["image_url"]) if "image_url" in writeback_names else None,
                 "generated_image": existing_fields.get(writeback_names["image_url"]) if "image_url" in writeback_names else existing_fields.get(writeback_names["image_attachment"]) if "image_attachment" in writeback_names else None,
@@ -177,11 +202,21 @@ class ConfiguredSourceOrchestrator:
         source_dir = self._output_root / prepared.source_id
         source_dir.mkdir(parents=True, exist_ok=True)
         try:
-            material_paths = self._material_paths(prepared, source_dir)
-            result = self._executor(
-                _canonical_record(prepared, material_paths), source_dir,
-                source=source_id, reviewer=self._reviewer,
-            )
+            if template_error:
+                # Keep the normal blocked-task invariant even when template
+                # resolution fails before the pipeline renderer is entered.
+                import re
+                safe_task_id = re.sub(r"[^A-Za-z0-9_-]+", "_", prepared.task.task_id).strip("_") or "TASK-000"
+                stale_image = source_dir / f"{safe_task_id}_rendered.png"
+                if stale_image.exists():
+                    stale_image.unlink()
+                result = {"status": "BLOCKED", "generated_image": None, "artifact": None, "violations": [template_error.as_dict()], "blocked_reason": template_error.message}
+            else:
+                material_paths = self._material_paths(prepared, source_dir)
+                result = self._executor(
+                    _canonical_record(prepared, material_paths), source_dir,
+                    source=source_id, reviewer=self._reviewer,
+                )
         except Exception as exc:
             result = {"status": "FAILED", "generated_image": None, "violations": [], "error": {"code": "ORCHESTRATION_EXECUTION_FAILED", "message": str(exc)}}
 
@@ -192,7 +227,8 @@ class ConfiguredSourceOrchestrator:
             "task_record_id": prepared.receipt.task_record_id, "product_record_id": prepared.receipt.product_record_id,
             "input_hash": execution_hash, "prepared_input_fingerprint": prepared.input_fingerprint,
             "rules_version": result.get("rules_version", self._rules_version),
-            "pipeline_version": result.get("pipeline_version", self._template_version),
+            "pipeline_version": result.get("pipeline_version", self._pipeline_version),
+            "template": result.get("template") or ({key: resolved_template[key] for key in ("template_id", "name", "version", "status")} if resolved_template else None),
         })
         if result.get("status") != "PASSED":
             result["generated_image"] = None

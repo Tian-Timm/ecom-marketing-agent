@@ -203,7 +203,7 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertNotIn("商品数量", self.html)
         self.assertNotIn("数据来源", self.html)
         self.assertNotIn("同步方式", self.html)
-        self.assertNotIn("公开模式", self.html)
+        self.assertIn("公开只读", self.html)
         self.assertIn('class="summary-group summary-source-group"', self.html)
         self.assertIn('class="summary-group summary-results-group"', self.html)
         self.assertIn('class="summary-group summary-runtime-group"', self.html)
@@ -332,7 +332,6 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertNotIn('action: "run_next_pending"', self.html)
         self.assertIn('id="mode-status"', self.html)
         self.assertIn('id="admin-mode-toggle"', self.html)
-        self.assertIn('class="admin-entry" id="admin-mode-toggle"', self.html)
         self.assertIn('id="source-select-cell"', self.html)
         self.assertIn('class="source-cell hidden"', self.html)
         self.assertNotIn("localStorage", self.html)
@@ -341,10 +340,44 @@ class FrontendDemoContractTests(unittest.TestCase):
         self.assertIn('state.sourceId = ""', self.html)
         self.assertIn('class="connection" id="mode-status">公开只读</span>', self.html)
         topbar = self.html.split('<header class="topbar">', 1)[1].split("</header>", 1)[0]
-        self.assertNotIn('id="admin-mode-toggle"', topbar)
+        self.assertIn('id="admin-mode-toggle"', self.html)
         self.assertIn("数据源接入", self.html)
         self.assertIn("管理员入口", self.html)
-        self.assertNotIn(">管理员模式<", self.html)
+
+    def test_template_management_contract_is_admin_only_and_keeps_token_ephemeral(self) -> None:
+        self.assertIn('id="admin-mode-toggle"', self.html)
+        self.assertIn("公开只读", self.html)
+        self.assertIn("输入管理员令牌", self.html)
+        self.assertIn("验证数据源接入权限", self.html)
+        self.assertIn('id="template-manager-entry"', self.html)
+        self.assertIn('id="template-manager"', self.html)
+        self.assertIn('id="template-list"', self.html)
+        self.assertIn('id="template-canvas"', self.html)
+        self.assertNotIn("localStorage", self.html)
+        self.assertNotIn("sessionStorage", self.html)
+        self.assertNotIn("document.cookie", self.html)
+        self.assertIn("resetTemplateEditor();", self.html)
+        self.assertIn('id="template-test-task"', self.html)
+        self.assertIn("/api/template_background?template_id=", self.html)
+        self.assertIn("URL.revokeObjectURL(templateEditor.backgroundUrl)", self.html)
+        self.assertIn("ctx.canvas.width", self.html)
+        self.assertIn("ctx.canvas.height", self.html)
+        self.assertIn('document.getElementById("template-ratio").addEventListener("change"', self.html)
+        self.assertIn("applyCanvasRatio(templateEditor.current)", self.html)
+        self.assertIn("templateEditor.current.supported_ratios=[document.getElementById(\"template-ratio\").value]", self.html)
+        self.assertIn("loadTemplateBackground(templateId,asset)", self.html)
+        self.assertIn("if(!asset){drawTemplateCanvas();return;}", self.html)
+        for endpoint in ("/api/templates", "/api/template_upload", "/api/template_test", "/api/template_save", "/api/template_publish"):
+            self.assertIn(endpoint, self.html)
+
+    def test_template_entry_is_visible_only_in_administrator_mode(self) -> None:
+        """Login success must expose a real, separately-addressable template entry."""
+        self.assertIn('id="template-manager-entry"', self.html)
+        self.assertIn('const templateManagerEntry = document.getElementById("template-manager-entry")', self.html)
+        self.assertIn('templateManagerEntry.classList.toggle("hidden", !state.isAdminMode)', self.html)
+        self.assertIn('state.isAdminMode = true', self.html)
+        self.assertIn('state.isAdminMode = false', self.html)
+        self.assertIn('configureRuntimeUI(state.runtime);', self.html)
 
 
 if __name__ == "__main__":

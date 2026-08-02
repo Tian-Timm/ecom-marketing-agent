@@ -25,6 +25,7 @@ from standardize import process_file, sanitize_record
 from audit_text import audit_batch, load_rules
 from assemble_image import assemble_batch, safe_task_id
 from semantic_review import DeepSeekSemanticReviewer
+from src.template_system import DEFAULT_TEMPLATE_ID, TemplateError
 
 SCHEMA_VERSION = "2.0"
 PIPELINE_VERSION = "2026-08-01.2"
@@ -99,6 +100,11 @@ def execute_task(
         for material_key in ("product_image_path", "logo_image_path"):
             if raw_record.get(material_key):
                 record[material_key] = str(raw_record[material_key])
+        # This internal marker is added only by configured-source orchestration
+        # after exact source/task resolution.  It prevents built-in fixture
+        # materials from masking a formal source's missing media.
+        if raw_record.get("_render_context") == "configured":
+            record["_render_context"] = "configured"
         input_hash = _input_hash(record)
         trace.append(_trace_step(
             "normalize",
@@ -169,9 +175,22 @@ def execute_task(
         step_started_at = _utc_now()
         step_counter = perf_counter()
         if record["status"] == "PASSED":
-            record = assemble_batch([record], output_dir)[0]
-            render_status = "COMPLETED"
-            render_detail = "营销图片已生成。"
+            try:
+                record = assemble_batch([record], output_dir)[0]
+                record["template_id"] = record.get("template_id") or DEFAULT_TEMPLATE_ID
+                if record.get("artifact", {}).get("template"):
+                    record["template"] = record["artifact"]["template"]
+                render_status = "COMPLETED"
+                render_detail = "营销图片已生成。"
+            except TemplateError as exc:
+                _remove_stale_image(record.get("task_id"), output_dir)
+                record["status"] = "BLOCKED"
+                record["generated_image"] = None
+                record["artifact"] = None
+                record.setdefault("violations", []).append(exc.as_dict())
+                record["blocked_reason"] = exc.message
+                render_status = "BLOCKED"
+                render_detail = exc.message
         else:
             record = assemble_batch([record], output_dir)[0]
             render_status = "SKIPPED"

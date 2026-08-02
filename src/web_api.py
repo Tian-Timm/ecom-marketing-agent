@@ -11,6 +11,7 @@ import time
 from http import HTTPStatus
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.parse import parse_qs, urlparse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = (
@@ -44,8 +45,10 @@ from .business_semantics import (
     SemanticLayerError, confirm_draft_config, discover_source,
 )
 from .source_composition import config_repository, resolve_feishu_credential
+from .template_system import TemplateError
 
 MAX_BODY_BYTES = 8 * 1024
+MAX_TEMPLATE_UPLOAD_BODY_BYTES = 3 * 1024 * 1024
 RATE_WINDOW_SECONDS = 10 * 60
 RATE_LIMIT = 6
 PUBLIC_DEMO_RATE_WINDOW_DEFAULT = 600
@@ -99,26 +102,89 @@ def send_json(
     handler.wfile.write(body)
 
 
-def _read_json(handler: Any) -> dict:
+def _read_json(handler: Any, *, max_bytes: int = MAX_BODY_BYTES) -> dict:
     length = int(handler.headers.get("Content-Length", "0"))
-    if length <= 0 or length > MAX_BODY_BYTES:
-        raise ValueError("请求内容为空或超过 8KB")
+    if length <= 0 or length > max_bytes:
+        raise ValueError(f"请求内容为空或超过 {max_bytes // 1024}KB")
     payload = json.loads(handler.rfile.read(length).decode("utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("请求内容必须是 JSON 对象")
     return payload
 
 
+def _get_header(handler: Any, key: str) -> str:
+    headers = getattr(handler, "headers", None)
+    if headers is None:
+        return ""
+    if hasattr(headers, "get"):
+        val = headers.get(key)
+        if val is not None:
+            return str(val)
+        val = headers.get(key.lower())
+        if val is not None:
+            return str(val)
+        val = headers.get(key.title())
+        if val is not None:
+            return str(val)
+    if isinstance(headers, dict):
+        target = key.lower()
+        for k, v in headers.items():
+            if str(k).lower() == target:
+                return str(v)
+    return ""
+
+
 def _client_ip(handler: Any) -> str:
-    forwarded = handler.headers.get("X-Forwarded-For", "")
-    return forwarded.split(",")[0].strip() or str(handler.client_address[0])
+    forwarded = _get_header(handler, "X-Forwarded-For")
+    return forwarded.split(",")[0].strip() or str(getattr(handler, "client_address", ["127.0.0.1"])[0])
+
+
+def _get_demo_admin_token() -> str:
+    token = os.environ.get("DEMO_ADMIN_TOKEN", "").strip()
+    if token:
+        return token
+    candidates = [Path.cwd(), PROJECT_ROOT, Path(__file__).resolve().parent]
+    for base in candidates:
+        curr = base
+        for _ in range(5):
+            for env_name in (".env.local", ".env"):
+                env_file = curr / env_name
+                if env_file.is_file():
+                    try:
+                        for line in env_file.read_text(encoding="utf-8").splitlines():
+                            line = line.strip()
+                            if line.startswith("DEMO_ADMIN_TOKEN="):
+                                val = line.split("=", 1)[1].strip().strip("'\"")
+                                if val:
+                                    return val
+                    except Exception:
+                        pass
+            if curr.parent == curr:
+                break
+            curr = curr.parent
+    return ""
+
 
 
 def _authorize_admin(handler: Any) -> None:
-    expected = os.environ.get("DEMO_ADMIN_TOKEN", "").strip()
-    supplied = handler.headers.get("X-Demo-Admin-Token", "").strip()
-    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+    expected = _get_demo_admin_token()
+    if not expected:
+        raise PermissionError("服务器未配置 DEMO_ADMIN_TOKEN 环境变量")
+    supplied = _get_header(handler, "X-Demo-Admin-Token").strip()
+    import logging
+    logging.info(
+        "[AUTH] expected_present=%s, expected_len=%d, supplied_present=%s, supplied_len=%d",
+        bool(expected),
+        len(expected),
+        bool(supplied),
+        len(supplied),
+    )
+    if not supplied or not hmac.compare_digest(expected, supplied):
         raise PermissionError("执行口令无效")
+
+
+
+
 
 
 def _authorize_write(handler: Any) -> None:
@@ -248,13 +314,17 @@ def _semantic_error(handler: Any, exc: Exception) -> None:
         return
     if isinstance(exc, SemanticLayerError):
         status = (
-            HTTPStatus.NOT_FOUND if exc.code.endswith("NOT_FOUND")
+            HTTPStatus.SERVICE_UNAVAILABLE if exc.code == "TEMPLATE_STORAGE_UNAVAILABLE"
+            else HTTPStatus.NOT_FOUND if exc.code.endswith("NOT_FOUND")
             else HTTPStatus.CONFLICT if exc.code in {
                 "SOURCE_CONFIG_REVISION_CONFLICT", "SOURCE_SCHEMA_DRIFTED",
                 "SOURCE_CONFIG_UNVERIFIED", "SOURCE_INACTIVE",
             } or "DUPLICATE" in exc.code or "CONFLICT" in exc.code
             else HTTPStatus.BAD_REQUEST
         )
+        send_json(handler, {"error": exc.as_dict()}, status)
+    elif isinstance(exc, TemplateError):
+        status = HTTPStatus.SERVICE_UNAVAILABLE if exc.code == "TEMPLATE_STORAGE_UNAVAILABLE" else HTTPStatus.NOT_FOUND if exc.code.endswith("NOT_FOUND") else HTTPStatus.BAD_REQUEST
         send_json(handler, {"error": exc.as_dict()}, status)
     else:
         # Connector/network/credential failures may include sensitive upstream
@@ -326,12 +396,16 @@ def handle_get(handler: Any, resource: str) -> None:
         if resource == "status":
             status = runtime_status()
             _, persistence = config_repository()
+            from .template_system import template_persistence
             status["config_persistence"] = persistence.mode
             caps = status.setdefault("capabilities", {})
             caps["onboarding_write"] = persistence.mode == "persistent"
             public_demo_enabled = _is_public_demo_enabled()
             has_deps = bool(caps.get("feishu_read") and caps.get("semantic_review"))
             caps["public_demo_run"] = bool(public_demo_enabled and has_deps)
+            template_store = template_persistence()
+            status["template_persistence"] = template_store.mode
+            caps["template_write"] = template_store.mode == "persistent"
             send_json(handler, status)
         elif resource == "tasks":
             from urllib.parse import parse_qs, urlparse
@@ -368,6 +442,7 @@ def handle_get(handler: Any, resource: str) -> None:
                         "deploy_date": _scalar(record.get(input_names.get("deploy_date"))), "campaign_name": _scalar(record.get(input_names.get("campaign_name"))),
                         "campaign_start": _scalar(record.get(input_names.get("campaign_start"))), "campaign_end": _scalar(record.get(input_names.get("campaign_end"))),
                         "main_text": _scalar(record.get(input_names.get("main_text"))), "sub_text": _scalar(record.get(input_names.get("sub_text"))),
+                        "template_id": _scalar(record.get(input_names.get("template_id"))) if input_names.get("template_id") else None,
                         "promo_price": _scalar(record.get(input_names.get("promo_price"))), "status": status,
                         "issues": _scalar(record.get(output_names.get("issues"))), "processed_at": _scalar(record.get(output_names.get("processed_at"))),
                         "input_hash": _scalar(record.get(output_names.get("input_hash"))), "image_attachment": image_attachment,
@@ -377,6 +452,15 @@ def handle_get(handler: Any, resource: str) -> None:
                         "product_name": _scalar(products.get(str(product_id or "").strip(), {}).get(product_fields.get("product_name"))),
                         "min_price": _scalar(products.get(str(product_id or "").strip(), {}).get(product_fields.get("min_price"))),
                     })
+            from .template_system import DEFAULT_TEMPLATE_ID, TemplateRepository
+            templates = TemplateRepository()
+            for item in records:
+                try:
+                    template = templates.resolve(item.get("template_id"))
+                    item["template_id"] = template["template_id"]
+                    item["template"] = {key: template[key] for key in ("template_id", "name", "version", "status")}
+                except TemplateError:
+                    item["template_id"] = item.get("template_id") or DEFAULT_TEMPLATE_ID
             send_json(handler, {"source_id": source_id, "records": records, "summary": {"total": len(records)}, "runtime": {"config_persistence": persistence.mode}})
         elif resource == "sources":
             _authorize_admin(handler)
@@ -394,6 +478,115 @@ def handle_get(handler: Any, resource: str) -> None:
             send_json(handler, {"error": "接口不存在"}, HTTPStatus.NOT_FOUND)
     except PermissionError as exc:
         send_json(handler, {"error": str(exc)}, HTTPStatus.UNAUTHORIZED)
+    except Exception as exc:
+        _semantic_error(handler, exc)
+
+
+def handle_templates(handler: Any) -> None:
+    """Administrator list: includes drafts but never exposes filesystem paths."""
+    try:
+        _authorize_admin(handler)
+        from .template_system import TemplateRepository
+        repo = TemplateRepository()
+        send_json(handler, {"templates": repo.list(include_drafts=True), "persistence": repo.persistence.mode, "can_write": repo.persistence.mode == "persistent"})
+    except Exception as exc:
+        _semantic_error(handler, exc)
+
+
+def handle_template_save(handler: Any) -> None:
+    try:
+        _authorize_write(handler)
+        payload = _read_json(handler)
+        template = payload.get("template")
+        if not isinstance(template, dict):
+            raise ValueError("template 必须是对象")
+        from .template_system import TemplateRepository
+        saved = TemplateRepository().save_draft(template)
+        send_json(handler, {"template": saved, "persistence": "persistent"})
+    except Exception as exc:
+        _semantic_error(handler, exc)
+
+
+def handle_template_publish(handler: Any) -> None:
+    try:
+        _authorize_write(handler)
+        payload = _read_json(handler)
+        from .template_system import TemplateRepository
+        published = TemplateRepository().publish(str(payload.get("template_id") or "").strip())
+        send_json(handler, {"template": published, "persistence": "persistent"})
+    except Exception as exc:
+        _semantic_error(handler, exc)
+
+
+def handle_template_upload(handler: Any) -> None:
+    try:
+        _authorize_write(handler)
+        payload = _read_json(handler, max_bytes=MAX_TEMPLATE_UPLOAD_BODY_BYTES)
+        filename = str(payload.get("filename") or "background")
+        data_url = str(payload.get("data_url") or "")
+        from .template_system import TemplateRepository
+        asset = TemplateRepository().store_background(filename=filename, data_url=data_url)
+        send_json(handler, {"asset": asset, "persistence": "persistent"})
+    except Exception as exc:
+        _semantic_error(handler, exc)
+
+
+def handle_template_test(handler: Any) -> None:
+    """Render a DRAFT or PUBLISHED template without persisting an output file."""
+    try:
+        _authorize_write(handler)
+        payload = _read_json(handler)
+        template_id = str(payload.get("template_id") or "").strip()
+        raw = payload.get("record")
+        if not isinstance(raw, dict):
+            raise ValueError("record 必须是任务对象")
+        allowed = {"task_id", "aspect_ratio", "main_text", "promo_price", "template_id"}
+        record = {key: raw[key] for key in allowed if key in raw}
+        record["template_id"] = template_id
+        # The administrator test path may use the checked-in demo product only
+        # when the selected read-only demo record has no material locator.  A
+        # formal task never receives this fallback for a runtime template.
+        record["product_image_path"] = str(
+            PROJECT_ROOT / ".agents" / "skills" / "simple-visual-compliance" / "assets" / "images" / "cha-cup-product-clean-stand.png"
+        )
+        record["logo_image_path"] = str(
+            PROJECT_ROOT / ".agents" / "skills" / "simple-visual-compliance" / "assets" / "images" / "cha-cup-logo.png"
+        )
+        import base64
+        import tempfile
+        from pathlib import Path
+        from .template_system import TemplateError, TemplateRepository, render_template
+        try:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                artifact = render_template(record, Path(temp_dir), repository=TemplateRepository(), allow_draft=True)
+                image = (Path(temp_dir) / artifact["filename"]).read_bytes()
+        except TemplateError as exc:
+            send_json(handler, {"status": "BLOCKED", "violations": [exc.as_dict()], "generated_image": None}, HTTPStatus.BAD_REQUEST)
+            return
+        send_json(handler, {"status": "PASSED", "violations": [], "artifact": artifact, "public_image_data_url": "data:image/png;base64," + base64.b64encode(image).decode("ascii")})
+    except Exception as exc:
+        _semantic_error(handler, exc)
+
+
+def handle_template_background(handler: Any) -> None:
+    """Authenticated, path-free background read for the editor canvas."""
+    try:
+        _authorize_admin(handler)
+        query = parse_qs(urlparse(str(getattr(handler, "path", ""))).query)
+        template_id = str((query.get("template_id") or [""])[0]).strip()
+        from .template_system import TemplateRepository
+        repo = TemplateRepository()
+        template = repo.resolve(template_id, allow_draft=True)
+        path = repo.background_path(template)
+        image = path.read_bytes()
+        media = "image/jpeg" if path.suffix.lower() in {".jpg", ".jpeg"} else "image/png"
+        handler.send_response(HTTPStatus.OK)
+        handler.send_header("Content-Type", media)
+        handler.send_header("Content-Length", str(len(image)))
+        handler.send_header("Cache-Control", "no-store")
+        handler.send_header("X-Content-Type-Options", "nosniff")
+        handler.end_headers()
+        handler.wfile.write(image)
     except Exception as exc:
         _semantic_error(handler, exc)
 

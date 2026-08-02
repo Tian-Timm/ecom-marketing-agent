@@ -122,6 +122,7 @@ SEMANTIC_ALIASES: Mapping[str, tuple[str, ...]] = {
     "campaign_name": ("活动名称", "活动", "campaign_name"),
     "campaign_start": ("活动开始日期", "活动开始时间", "开始日期", "campaign_start"),
     "campaign_end": ("活动结束日期", "活动结束时间", "结束日期", "campaign_end"),
+    "template_id": ("模板", "模板id", "设计模板", "template_id"),
     # 回写字段同样通过发现流程选择，避免把某个 Base 的中文列名写死在运行时。
     "status": ("审查状态", "处理状态", "状态", "status"),
     "issues": ("问题说明", "审查问题", "违规说明", "issues"),
@@ -141,6 +142,7 @@ EXPECTED_TYPES: Mapping[str, set[str]] = {
     "promo_price": {"text", "number"}, "deploy_date": {"text", "date"},
     "campaign_name": {"text"}, "campaign_start": {"text", "date"},
     "campaign_end": {"text", "date"},
+    "template_id": {"text", "single_select"},
     "status": {"text", "single_select"}, "issues": {"text"}, "processed_at": {"text", "date"},
     "input_hash": {"text"}, "pipeline_version": {"text"},
     "image_attachment": {"attachment"}, "image_url": {"text"},

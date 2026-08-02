@@ -282,6 +282,7 @@ class ConfiguredSourceRuntime:
             campaign_start=_date(task_values["campaign_start"], source_id=source_id, semantic="campaign_start") if "campaign_start" in task_values else None,
             campaign_end=_date(task_values["campaign_end"], source_id=source_id, semantic="campaign_end") if "campaign_end" in task_values else None,
             promo_price=_number(task_values["promo_price"], source_id=source_id, semantic="promo_price"),
+            template_id=_optional_text(task_record, task_fields.get(task_mapping.fields.get("template_id", None).field_id) if task_mapping.fields.get("template_id") else None, source_id=source_id, semantic="template_id"),
         )
         product_record_id = str(product_record.get("_record_id") or "")
         task_record_id = str(task_record.get("_record_id") or "")
