@@ -3,6 +3,12 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/api/templates", "destination": "/api/template?action=templates" },
+    { "source": "/api/template_background", "destination": "/api/template?action=background" },
+    { "source": "/api/template_upload", "destination": "/api/template?action=upload" },
+    { "source": "/api/template_save", "destination": "/api/template?action=save" },
+    { "source": "/api/template_test", "destination": "/api/template?action=test" },
+    { "source": "/api/template_publish", "destination": "/api/template?action=publish" },
     { "source": "/", "destination": "/index.html" }
   ]
 }
