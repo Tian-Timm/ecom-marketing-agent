@@ -1,45 +1,27 @@
-# CHA CUP 营销图片工作台
+# CHA CUP 电商营销图片设计与风控合规系统
 
-这是一个面向电商营销任务的合规审查与确定性出图 MVP。它读取飞书 Base 任务，完成字段标准化、规则审查、DeepSeek 语义复核、模板化图片生成，并可将结果精确回写到原任务记录。
+这是观猹 FDE 学习营结课项目。项目面向电商营销素材生产场景：把商品资料、营销任务、合规审查和图片交付串成可追溯的流程，减少人工在多张表、文案和设计稿之间反复核对的成本。
 
-## 模式与管理员令牌
+系统可从飞书 Base 读取商品与任务记录，并在首次接入时协助发现表结构、由用户确认业务字段映射。日常运行按 `source_id + task_id` 精确读取数据，完成字段标准化、价格/日期/画布/禁用词等确定性规则检查，再由 DeepSeek 进行语义复核。通过审查的任务使用确定性模板渲染商品图、主文案和活动价格，随后上传结果并将回执写回原任务；不通过的任务会保留结构化原因，避免继续出图。
 
-页面右上角默认显示“公开模式 ▾”。公开模式只能浏览演示任务、其处理记录、所用模板和已生成的结果图片。选择“进入管理员模式”后输入 `DEMO_ADMIN_TOKEN` 并点击“验证并进入”；管理员菜单会显示数据源管理、模板管理和退出入口。
+页面提供公开只读模式和管理员模式。公开模式用于浏览演示任务及结果；管理员完成口令验证后，可接入数据源、处理待审查任务，并进入模板管理工作台。模板管理支持背景图上传、商品图/Logo/主文案/活动价格区域调整、草稿保存、指定已有任务测试生成和发布。正式任务只使用已发布模板。
 
-令牌只保存在该页面的 JavaScript 内存中。它不会写入 localStorage、sessionStorage、Cookie、URL、日志或 HTML；刷新页面和退出管理员模式都会清空令牌及管理员专属状态。后端模板写接口仍会校验 `X-Demo-Admin-Token`，前端隐藏不是授权机制。
+主要实现位于 `src/`（业务语义、风控、渲染与接口编排）、`api/`（Vercel Python Functions）和 `index.html`（Dashboard）。模板定义与相关测试在 `.agents/skills/simple-visual-compliance/` 中。
 
-Vercel 项目设置中添加环境变量：
+## 本地启动
 
-```text
-DEMO_ADMIN_TOKEN=请使用独立的高强度随机值
+安装 Vercel CLI 后，在项目根目录运行：
+
+```bash
+npx vercel dev
 ```
 
-本地 Vercel Python Function 使用链接项目的 Development 环境变量。先在 Vercel 项目设置中为 **Development** 配置 `DEMO_ADMIN_TOKEN`，再拉取该环境：
+管理员接口需要 `DEMO_ADMIN_TOKEN`。请在 Vercel 项目设置的 **Development** 环境配置该变量，再拉取本地开发环境；不要把令牌、`.env.local` 或 `.vercel/.env.development.local` 提交到仓库。Vercel 本地 Python Function 应以 Development scope 的环境变量为准。
 
 ```bash
 vercel env pull .vercel/.env.development.local --environment=development
-vercel dev
+npx vercel dev
 ```
-
-根目录 `.env.local` 可供非 Vercel 本地工具使用，但不应被视为 `vercel dev` Python Function 的可靠注入来源；如果 `/api/sources` 返回 JSON `401` 与“执行口令无效”，请先检查 Development 作用域是否已配置该变量。Vercel CLI 的本地 Python builder 也不兼容在 `vercel.json` 中为 Python Function 写入 `maxDuration`，本项目因此不声明该元数据。
-
-不要把 `.env.local`、`.vercel/.env.development.local` 或任何令牌提交到仓库。
-
-## 模板管理 MVP
-
-管理员从“模板管理”打开独立全屏视图：上传 PNG/JPG 背景，在画布上选择、拖动或缩放矩形区域，选择商品图片、品牌 Logo、主文案或活动价格类型，再保存草稿、测试生成和发布。模板 JSON 是内部实现细节，用户界面不提供 JSON 上传或编辑。
-
-正式任务只会解析 `PUBLISHED` 模板；草稿仅可在管理员测试生成中使用。任务可选 `template_id`，支持“模板”“模板ID”“设计模板”和 `template_id` 列名；缺省时使用内置“经典展台”模板。Logo 只有在模板声明 Logo 区域时才需要。
-
-模板使用版本化 [JSON Schema](.agents/skills/simple-visual-compliance/assets/templates/schema/template.schema.json)，并仅允许归一化坐标、四种绑定字段、contain/cover 和基础文字排版参数。发布前会校验背景、模板 ID、比例、区域边界、字段白名单及商品图/主文案/价格必需区。常见结构化错误包括 `TEMPLATE_NOT_FOUND`、`TEMPLATE_ASSET_MISSING`、`TEMPLATE_RATIO_NOT_SUPPORTED`、`TEMPLATE_LAYER_OUT_OF_BOUNDS`、`TEMPLATE_FIELD_NOT_ALLOWED` 和 `TEXT_OVERFLOW`。
-
-## 存储与部署限制
-
-内置演示模板随仓库发布，线上始终可读取。开发环境使用本地文件系统模板存储（可用 `TEMPLATE_STORAGE_DIR` 指定位置）。Vercel 运行时没有持久化模板存储适配器，因此模板写 API 会明确返回“当前部署未配置持久化模板存储”，不会显示虚假的保存成功。正式生产需要替换为持久化 `TemplateRepository` 适配器；本 MVP 不接入数据库或对象存储。
-
-## 为什么没有 Canva MCP
-
-第一版的重点是把设计背景、商品字段、合规审查、确定性生成和飞书交付连成可验证的闭环。Canva、Photoshop、Figma、稿定设计等任何设计工具都可以先导出 PNG/JPG 背景；Canva MCP 本身不能解决商品图、价格、文案和 Logo 的字段语义绑定，并会引入 OAuth、账号权限、套餐和外部 API 不确定性。未来可以在模板领域前增加 `DesignImporter` 接口，但当前未实现任何 Canva、Figma 或 PSD 集成。
 
 ## 测试
 
@@ -48,8 +30,6 @@ python -m unittest discover -s tests -p "test_*.py" -v
 python -m unittest discover -s .agents/skills/simple-visual-compliance/tests -p "test_*.py" -v
 ```
 
-本地离线流水线：
+## 部署说明
 
-```bash
-python main.py
-```
+仓库内置模板可用于演示。开发环境可使用本地模板存储；当前 Vercel 部署没有持久化模板存储适配器，因此模板写入接口会明确提示该限制，而不会把临时写入当作已保存。若用于长期线上运营，需要接入持久化的模板与素材存储。
